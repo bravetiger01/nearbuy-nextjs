@@ -29,10 +29,10 @@ const SECTIONS = [
 ];
 
 export default function OwnerSidebar() {
-  const { ownerSection, setOwnerSection, sidebarCollapsed, toggleSidebar } = useApp();
+  const { ownerSection, setOwnerSection, sidebarCollapsed, toggleSidebar, mobileSidebarOpen, closeMobileSidebar } = useApp();
 
   return (
-    <aside className={`sidebar-boxy ${sidebarCollapsed ? 'collapsed' : ''}`}>
+    <aside className={`sidebar-boxy ${sidebarCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'open' : ''}`}>
       <div className="sb-top">
         <div className="sb-logo-wrap">
           <LogoMark width={110} height={28} />
@@ -62,6 +62,7 @@ export default function OwnerSidebar() {
                 onClick={(e) => {
                   e.preventDefault();
                   setOwnerSection(item.id);
+                  closeMobileSidebar();
                 }}
               >
                 {item.icon}

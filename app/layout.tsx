@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 
@@ -16,6 +16,15 @@ export const metadata: Metadata = {
   title: 'nearbuy — Find anything nearby',
   description:
     'Product discovery for offline stores with live inventory, reservations, rider delivery and a shop-owner dashboard.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#F5F3FF',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -63,7 +63,8 @@ function DocEditable({
           </div>
         ))}
       </div>
-      <table className="doc-table-boxy">
+      <div className="table-scroll">
+        <table className="doc-table-boxy">
         <thead>
           <tr>
             <th>#</th>
@@ -102,7 +103,8 @@ function DocEditable({
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
       <button className="add-row-boxy" onClick={addRow}>
         + ADD ITEM
       </button>

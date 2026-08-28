@@ -118,7 +118,9 @@ interface AppContextValue {
   ownerSection: string;
   setOwnerSection: (s: string) => void;
   sidebarCollapsed: boolean;
+  mobileSidebarOpen: boolean;
   toggleSidebar: () => void;
+  closeMobileSidebar: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -154,6 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [ownerSection, setOwnerSection] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -299,7 +302,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [rawResults, sortBy]);
 
   const toggleSidebar = useCallback(() => {
-    setSidebarCollapsed((c) => !c);
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches) {
+      setMobileSidebarOpen((o) => !o);
+    } else {
+      setSidebarCollapsed((c) => !c);
+    }
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setMobileSidebarOpen(false);
   }, []);
 
   const value = useMemo<AppContextValue>(
@@ -353,7 +364,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ownerSection,
       setOwnerSection,
       sidebarCollapsed,
+      mobileSidebarOpen,
       toggleSidebar,
+      closeMobileSidebar,
     }),
     [
       mode,
@@ -396,7 +409,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       openProductModal,
       ownerSection,
       sidebarCollapsed,
+      mobileSidebarOpen,
       toggleSidebar,
+      closeMobileSidebar,
     ]
   );
 

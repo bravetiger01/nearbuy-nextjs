@@ -15,10 +15,11 @@ import Bank from './Bank';
 import SettingsView from './SettingsView';
 
 export default function OwnerView() {
-  const { sidebarCollapsed, ownerSection } = useApp();
+  const { sidebarCollapsed, ownerSection, mobileSidebarOpen, closeMobileSidebar } = useApp();
   return (
     <div id="ownerView" style={{ display: 'flex', minHeight: '100vh', background: 'var(--gray-100)' }}>
       <OwnerSidebar />
+      {mobileSidebarOpen && <div className="sb-overlay" onClick={closeMobileSidebar} />}
       <main className={`owner-main-boxy ${sidebarCollapsed ? 'sb-collapsed' : ''}`}>
         <OwnerTopbar />
         <DashboardKey ownerSection={ownerSection} />
