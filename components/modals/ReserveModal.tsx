@@ -29,7 +29,20 @@ export default function ReserveModal() {
   };
 
   return (
-    <Modal name="reserve" title="RESERVE PRODUCT">
+    <Modal
+      name="reserve"
+      title="RESERVE PRODUCT"
+      footer={
+        <>
+          <button className="btn-modal-outline" onClick={() => closeModal('reserve')}>
+            CANCEL
+          </button>
+          <button className="btn-modal-solid" onClick={confirm}>
+            CONFIRM RESERVE
+          </button>
+        </>
+      }
+    >
       <div className="reserve-disp">
         <strong>{reserveCtx?.productName ?? '—'}</strong>
         <br />
@@ -57,14 +70,6 @@ export default function ReserveModal() {
       </div>
       <div className="modal-note">
         Shopkeeper notified instantly. Hold valid for <strong>2 hours</strong>.
-      </div>
-      <div className="modal-ftr-boxy" style={{ border: 'none', padding: '16px 0 0' }}>
-        <button className="btn-modal-outline" onClick={() => closeModal('reserve')}>
-          CANCEL
-        </button>
-        <button className="btn-modal-solid" onClick={confirm}>
-          CONFIRM RESERVE
-        </button>
       </div>
     </Modal>
   );

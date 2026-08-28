@@ -9,10 +9,11 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   width?: 'default' | 'wide' | 'xl' | 'voice';
+  bodyClass?: string;
   onClose?: () => void;
 }
 
-export default function Modal({ name, title, children, footer, width = 'default', onClose }: ModalProps) {
+export default function Modal({ name, title, children, footer, width = 'default', bodyClass = '', onClose }: ModalProps) {
   const { activeModal, closeModal } = useApp();
   if (activeModal !== name) return null;
 
@@ -41,7 +42,7 @@ export default function Modal({ name, title, children, footer, width = 'default'
             ✕
           </button>
         </div>
-        {children}
+        <div className={`modal-bdy-boxy${bodyClass ? ` ${bodyClass}` : ''}`}>{children}</div>
         {footer ? <div className="modal-ftr-boxy">{footer}</div> : null}
       </div>
     </div>

@@ -79,6 +79,43 @@ export default function RiderModal() {
         </span>
       }
       width="xl"
+      footer={
+        <>
+          {step === 1 && (
+            <>
+              <button className="btn-modal-outline" onClick={() => closeModal('rider')}>
+                CANCEL
+              </button>
+              <button className="btn-modal-rider" onClick={() => goStep(2)}>
+                NEXT — PREFERENCES →
+              </button>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <button className="btn-modal-outline" onClick={() => goStep(1)}>
+                ← BACK
+              </button>
+              <button className="btn-modal-rider" onClick={() => goStep(3)}>
+                NEXT — PAYMENT →
+              </button>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <button className="btn-modal-outline" onClick={() => goStep(2)}>
+                ← BACK
+              </button>
+              <button className="btn-modal-rider" onClick={confirmRider}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20,6 9,17 4,12" />
+                </svg>
+                CONFIRM &amp; BOOK RIDER
+              </button>
+            </>
+          )}
+        </>
+      }
     >
       <div className="rider-steps-bar">
         <div className={`rsb-step ${step === 1 ? 'active' : step > 1 ? 'done' : ''}`}>
@@ -98,7 +135,7 @@ export default function RiderModal() {
       </div>
 
       {step === 1 && (
-        <div className="modal-bdy-boxy">
+        <>
           <div className="porter-info-bar">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="5" cy="17" r="3" />
@@ -204,11 +241,11 @@ export default function RiderModal() {
               </div>
             )}
           </div>
-        </div>
+        </>
       )}
 
       {step === 2 && (
-        <div className="modal-bdy-boxy">
+        <>
           <div style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.12em', color: 'var(--lav-600)', borderLeft: '3px solid var(--lav-500)', paddingLeft: 8, marginBottom: 16 }}>
             CLOTHING PREFERENCES FOR YOUR RIDER
           </div>
@@ -312,13 +349,13 @@ export default function RiderModal() {
               <span className="tgl-slider" />
             </label>
           </div>
-        </div>
+        </>
       )}
 
       {step === 3 && (
-        <div className="modal-bdy-boxy">
+        <>
           <div style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.12em', color: 'var(--lav-600)', borderLeft: '3px solid var(--lav-500)', paddingLeft: 8, marginBottom: 16 }}>
-            CONFIRM & PAY
+            CONFIRM &amp; PAY
           </div>
 
           <div className="order-summary-card">
@@ -413,44 +450,8 @@ export default function RiderModal() {
             <strong>Powered by Porter</strong> — Your rider is background verified, insured, and real-time tracked.{' '}
             You&apos;ll receive live location updates via SMS once booked.
           </div>
-        </div>
+        </>
       )}
-
-      <div className="modal-ftr-boxy" style={step === 1 ? {} : { display: 'flex' }}>
-        {step === 1 && (
-          <>
-            <button className="btn-modal-outline" onClick={() => closeModal('rider')}>
-              CANCEL
-            </button>
-            <button className="btn-modal-rider" onClick={() => goStep(2)}>
-              NEXT — PREFERENCES →
-            </button>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <button className="btn-modal-outline" onClick={() => goStep(1)}>
-              ← BACK
-            </button>
-            <button className="btn-modal-rider" onClick={() => goStep(3)}>
-              NEXT — PAYMENT →
-            </button>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <button className="btn-modal-outline" onClick={() => goStep(2)}>
-              ← BACK
-            </button>
-            <button className="btn-modal-rider" onClick={confirmRider} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20,6 9,17 4,12" />
-              </svg>
-              CONFIRM & BOOK RIDER
-            </button>
-          </>
-        )}
-      </div>
     </Modal>
   );
 }

@@ -29,7 +29,20 @@ export default function AddProductModal() {
   };
 
   return (
-    <Modal name="addProduct" title={editProduct ? 'EDIT PRODUCT' : 'ADD PRODUCT'}>
+    <Modal
+      name="addProduct"
+      title={editProduct ? 'EDIT PRODUCT' : 'ADD PRODUCT'}
+      footer={
+        <>
+          <button className="btn-modal-outline" onClick={() => closeModal('addProduct')}>
+            CANCEL
+          </button>
+          <button className="btn-modal-solid" onClick={save}>
+            {editProduct ? 'SAVE CHANGES' : 'ADD PRODUCT'}
+          </button>
+        </>
+      }
+    >
       <div className="form-g">
         <label>PRODUCT NAME</label>
         <input type="text" className="f-inp" id="newProdName" placeholder="e.g. Classmate Notebook A4" value={name} onChange={(e) => setName(e.target.value)} />
@@ -58,14 +71,6 @@ export default function AddProductModal() {
           <option value="yes">YES</option>
           <option value="no">NO</option>
         </select>
-      </div>
-      <div className="modal-ftr-boxy" style={{ border: 'none', padding: '16px 0 0' }}>
-        <button className="btn-modal-outline" onClick={() => closeModal('addProduct')}>
-          CANCEL
-        </button>
-        <button className="btn-modal-solid" onClick={save}>
-          {editProduct ? 'SAVE CHANGES' : 'ADD PRODUCT'}
-        </button>
       </div>
     </Modal>
   );

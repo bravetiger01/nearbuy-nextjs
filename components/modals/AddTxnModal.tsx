@@ -23,7 +23,20 @@ export default function AddTxnModal() {
   };
 
   return (
-    <Modal name="addTxn" title="ADD TRANSACTION">
+    <Modal
+      name="addTxn"
+      title="ADD TRANSACTION"
+      footer={
+        <>
+          <button className="btn-modal-outline" onClick={() => closeModal('addTxn')}>
+            CANCEL
+          </button>
+          <button className="btn-modal-solid" onClick={save}>
+            SAVE
+          </button>
+        </>
+      }
+    >
       <div className="form-g">
         <label>DATE</label>
         <input type="date" className="f-inp" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -42,14 +55,6 @@ export default function AddTxnModal() {
       <div className="form-g">
         <label>AMOUNT (₹)</label>
         <input type="number" className="f-inp" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
-      </div>
-      <div className="modal-ftr-boxy" style={{ border: 'none', padding: '16px 0 0' }}>
-        <button className="btn-modal-outline" onClick={() => closeModal('addTxn')}>
-          CANCEL
-        </button>
-        <button className="btn-modal-solid" onClick={save}>
-          SAVE
-        </button>
       </div>
     </Modal>
   );

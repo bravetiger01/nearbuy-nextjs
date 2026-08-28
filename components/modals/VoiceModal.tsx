@@ -95,9 +95,8 @@ export default function VoiceModal() {
   }, [unsupported, lang, closeModal, quickSearch, showToast]);
 
   return (
-    <Modal name="voice" title="VOICE SEARCH" width="voice">
-      <div className="voice-modal-body">
-        <div className="voice-viz">
+    <Modal name="voice" title="VOICE SEARCH" width="voice" bodyClass="voice-modal-body">
+      <div className="voice-viz">
           {[1, 2, 3, 4, 5, 6, 7].map((i) => (
             <div className="vbar" key={i} />
           ))}
@@ -113,7 +112,6 @@ export default function VoiceModal() {
         <p className="voice-lang-txt">
           LANGUAGE: <span>{langNames[lang] ?? 'ENGLISH'}</span>
         </p>
-      </div>
     </Modal>
   );
 }

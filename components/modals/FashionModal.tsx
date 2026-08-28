@@ -3,11 +3,19 @@
 import { useState } from 'react';
 import Modal from '../Modal';
 import { useApp } from '../../lib/store-context';
-import { FASHION_STORES } from '../../lib/data';
+
+const FASHION_STORES = [
+  'Zudio — Anand',
+  'H&amp;M — Ahmedabad',
+  'Max Fashion — Anand',
+  'Westside — Vadodara',
+  'FBB (Big Bazaar Fashion) — Anand',
+  'Trends — Anand',
+];
 
 export default function FashionModal() {
   const { showToast, closeModal } = useApp();
-  const [store, setStore] = useState(FASHION_STORES[0].label);
+  const [store, setStore] = useState(FASHION_STORES[0]);
   const [size, setSize] = useState('L');
   const [budget, setBudget] = useState(1000);
   const [pref, setPref] = useState('');
@@ -23,7 +31,21 @@ export default function FashionModal() {
   };
 
   return (
-    <Modal name="fashion" title="BOOK A STYLE GUIDE" width="wide">
+    <Modal
+      name="fashion"
+      title="BOOK A STYLE GUIDE"
+      width="wide"
+      footer={
+        <>
+          <button className="btn-modal-outline" onClick={() => closeModal('fashion')}>
+            CANCEL
+          </button>
+          <button className="btn-modal-fashion" onClick={confirm}>
+            BOOK STYLE GUIDE — ₹89
+          </button>
+        </>
+      }
+    >
       <div className="fashion-modal-intro">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polygon points="23,7 16,12 23,17 23,7" />
@@ -38,7 +60,7 @@ export default function FashionModal() {
         <label>CHOOSE STORE</label>
         <select className="f-inp" value={store} onChange={(e) => setStore(e.target.value)}>
           {FASHION_STORES.map((fs) => (
-            <option key={fs.label}>{fs.label}</option>
+            <option key={fs}>{fs}</option>
           ))}
         </select>
       </div>
@@ -85,14 +107,6 @@ export default function FashionModal() {
           <span>FLAT FEE TODAY</span>
           <span>₹89 + PRODUCT</span>
         </div>
-      </div>
-      <div className="modal-ftr-boxy" style={{ border: 'none', padding: '16px 0 0' }}>
-        <button className="btn-modal-outline" onClick={() => closeModal('fashion')}>
-          CANCEL
-        </button>
-        <button className="btn-modal-fashion" onClick={confirm}>
-          BOOK STYLE GUIDE — ₹89
-        </button>
       </div>
     </Modal>
   );

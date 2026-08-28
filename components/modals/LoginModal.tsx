@@ -30,7 +30,31 @@ export default function LoginModal() {
   };
 
   return (
-    <Modal name="login" title="LOGIN / REGISTER">
+    <Modal
+      name="login"
+      title="LOGIN / REGISTER"
+      footer={
+        step === 1 ? (
+          <>
+            <button className="btn-modal-outline" onClick={() => closeModal('login')}>
+              CANCEL
+            </button>
+            <button className="btn-modal-solid" onClick={sendOTP}>
+              SEND OTP
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="btn-modal-outline" onClick={() => setStep(1)}>
+              BACK
+            </button>
+            <button className="btn-modal-solid" onClick={verifyOTP}>
+              VERIFY &amp; LOGIN
+            </button>
+          </>
+        )
+      }
+    >
       {step === 1 ? (
         <>
           <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginBottom: 16 }}>
@@ -39,14 +63,6 @@ export default function LoginModal() {
           <div className="form-g">
             <label>PHONE NUMBER</label>
             <input type="tel" className="f-inp" placeholder="+91 9XXXX XXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </div>
-          <div className="modal-ftr-boxy" style={{ border: 'none', padding: '16px 0 0' }}>
-            <button className="btn-modal-outline" onClick={() => closeModal('login')}>
-              CANCEL
-            </button>
-            <button className="btn-modal-solid" onClick={sendOTP}>
-              SEND OTP
-            </button>
           </div>
         </>
       ) : (
@@ -57,14 +73,6 @@ export default function LoginModal() {
           <div className="form-g">
             <label>OTP</label>
             <input type="text" className="f-inp" placeholder="123456" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value)} />
-          </div>
-          <div className="modal-ftr-boxy" style={{ border: 'none', padding: '16px 0 0' }}>
-            <button className="btn-modal-outline" onClick={() => setStep(1)}>
-              BACK
-            </button>
-            <button className="btn-modal-solid" onClick={verifyOTP}>
-              VERIFY & LOGIN
-            </button>
           </div>
         </>
       )}
