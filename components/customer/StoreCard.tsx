@@ -1,103 +1,94 @@
 'use client';
 
-import type { Product, StoreResult } from '../../lib/types';
+import type { MouseEvent } from 'react';
+import type { StoreResult } from '../../lib/types';
 import { useApp } from '../../lib/store-context';
-import { ClockIcon, PinIcon, ReserveIcon, TruckIcon } from '../../lib/icons';
+import { BoxIcon, ClockIcon, PinIcon } from '../../lib/icons';
 
-export default function StoreCard({ store, query }: { store: StoreResult; query: string }) {
+export default function StoreCard({ store }: { store: StoreResult }) {
   const { openProductModal, setRiderCtx, setReserveCtx, openModal } = useApp();
-  const ql = query.toLowerCase();
+  const first = store.matchedProducts[0] ?? store.products[0];
+  const unitTotal = store.matchedProducts.reduce((t, p) => t + p.stock, 0);
+  const shown = store.matchedProducts.slice(0, 3);
 
-  const highlight = (name: string) => {
-    const idx = name.toLowerCase().indexOf(ql);
-    if (idx === -1) return name;
-    return (
-      <>
-        {name.slice(0, idx)}
-        <mark className="hl">{name.slice(idx, idx + ql.length)}</mark>
-        {name.slice(idx + ql.length)}
-      </>
-    );
-  };
+  const stop = (e: MouseEvent<Element>) => e.stopPropagation();
 
-  const doReserve = (p: Product) => {
-    setReserveCtx({ storeId: store.id, productName: p.name, price: p.price, storeName: store.name });
+  const doReserve = (e: MouseEvent<Element>) => {
+    stop(e);
+    setReserveCtx({ storeId: store.id, productName: first.name, price: first.price, storeName: store.name });
     openModal('reserve');
   };
 
-  const doRider = (p: Product) => {
-    setRiderCtx({ storeId: store.id, productName: p.name, price: p.price, storeName: store.name });
+  const doRider = (e: MouseEvent<Element>) => {
+    stop(e);
+    setRiderCtx({ storeId: store.id, productName: first.name, price: first.price, storeName: store.name });
     openModal('rider');
   };
 
+  const doView = (e: MouseEvent<Element>) => {
+    stop(e);
+    openProductModal(store.id);
+  };
+
   return (
-    <div className="store-card-boxy">
-      <div className="store-card-top">
-        <div className="store-monogram" style={{ background: store.color }}>
-          {store.name
-            .split(' ')
-            .map((w) => w[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase()}
-        </div>
-        <div className="store-card-info">
-          <div className="store-name-row">
-            <h3 className="store-name">{store.name}</h3>
-            {store.openNow ? <span className="open-chip">OPEN</span> : <span className="closed-chip">CLOSED</span>}
+    <div className="store-card-boxy" onClick={() => openProductModal(store.id)}>
+      <div className="sc-top-bar" style={{ background: store.color }} />
+      <div className="sc-body">
+        <div className="sc-head">
+          <div>
+            <div className="sc-name">{store.name}</div>
+            <div className="sc-cat">{store.category}</div>
           </div>
-          <div className="store-meta">
-            <span className="svchip">
-              <ClockIcon size={12} /> {store.lastUpdated}
-            </span>
-            <span className="svchip">
-              <PinIcon size={12} /> {store.distText}
-            </span>
-            <span className="svchip">★ {store.rating.toFixed(1)}</span>
-          </div>
-          <div className="store-cats">
-            {store.products.slice(0, 4).map((p) => (
-              <span className="cat-chip" key={p.name}>
-                {p.category}
-              </span>
-            ))}
+          <div className="sc-badges">
+            <span className={`sc-open ${store.openNow ? 'open' : 'closed'}`}>{store.openNow ? '● OPEN' : '● CLOSED'}</span>
+            <span className="sc-rating">★ {store.rating}</span>
           </div>
         </div>
-        <div className="store-time">
-          <small>Hours</small>
-          {store.hours}
-        </div>
-      </div>
 
-      <div className="store-products">
-        {store.matchedProducts.map((p) => {
-          const low = p.stock < 10;
-          return (
-            <div className="sp-row" key={p.name}>
-              <div className="sp-name">{highlight(p.name)}</div>
-              <div className="sp-price">
-                ₹{p.price.toLocaleString('en-IN')}
-                <small>/unit</small>
-              </div>
-              <div className={`sp-stock ${low ? 'low' : ''}`}>{p.stock} left</div>
-              <button className="btn-sm reserve-sm" onClick={() => doReserve(p)}>
-                <ReserveIcon size={12} />
-                RESERVE
-              </button>
-              <button className="btn-sm rider-sm" onClick={() => doRider(p)}>
-                <TruckIcon size={12} />
-                RIDER
-              </button>
+        <div className="sc-chips">
+          <div className="sc-chip dist">
+            <PinIcon size={12} />
+            {store.distText}
+          </div>
+          <div className="sc-chip">
+            <ClockIcon size={12} />
+            {store.hours}
+          </div>
+          <div className="sc-chip">
+            <BoxIcon size={12} />
+            {unitTotal} units
+          </div>
+        </div>
+
+        <div className="sc-products">
+          <div className="sc-prod-label">MATCHING PRODUCTS</div>
+          {shown.map((p) => (
+            <div className="sc-prod-item" key={p.name}>
+              <span className="sc-prod-name">{p.name}</span>
+              <span className="sc-prod-stock">{p.stock} in stock</span>
+              <span className="sc-prod-price">₹{p.price}</span>
             </div>
-          );
-        })}
-      </div>
+          ))}
+          {store.matchedProducts.length > 3 && (
+            <div style={{ fontSize: '0.7rem', color: 'var(--gray-500)', fontWeight: 700, letterSpacing: '0.04em', marginTop: 6 }}>
+              +{store.matchedProducts.length - 3} more products
+            </div>
+          )}
+        </div>
 
-      <div className="store-card-foot">
-        <button className="btn-viewmore" onClick={() => openProductModal(store.id)}>
-          VIEW FULL CATALOG →
-        </button>
-        <span className="store-phone">📞 {store.phone}</span>
+        <div className="sc-updated">UPDATED {store.lastUpdated.toUpperCase()}</div>
+
+        <div className="sc-actions">
+          <button className="sc-act-btn" onClick={doView}>
+            VIEW ALL
+          </button>
+          <button className="sc-act-btn reserve" onClick={doReserve}>
+            RESERVE
+          </button>
+          <button className="sc-act-btn rider" onClick={doRider}>
+            BOOK RIDER
+          </button>
+        </div>
       </div>
     </div>
   );
