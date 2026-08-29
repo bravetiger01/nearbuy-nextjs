@@ -1813,9 +1813,24 @@ img { display: block; max-width: 100%; }
    RESPONSIVE — MOBILE FIRST
    ══════════════════════════════════════════════════════ */
 
-/* iOS input sanity */
-@media (max-width: 480px) {
-  .f-inp, .d-inp, .search-inp, .lang-select { min-height: 44px; font-size: 16px; }
+/* iOS/Android input sanity — prevent auto-zoom & keep tap targets usable */
+@media (max-width: 768px) {
+  .f-inp, .d-inp, .search-inp, .lang-select, .ccard-period, .o-sel, .o-inp-search {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .search-inp, .o-inp-search { min-width: 0; flex-shrink: 1; }
+  .mode-btn, .btn-owner-solid, .btn-owner-outline, .btn-modal-solid, .btn-modal-outline,
+  .btn-modal-rider, .btn-modal-fashion, .btn-fashion, .lb-btn, .tbl-btn-boxy, .del-btn,
+  .add-row-boxy, .sc-act-btn, .pm-btn, .sb-collapse {
+    min-height: 44px;
+  }
+}
+
+/* Mobile baseline: modern viewport height, tap feedback, no horizontal bleed */
+body { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+@media (max-width: 768px) {
+  button, a, input, select, textarea, label, .sbl, .store-card-boxy, .lc-boxy { touch-action: manipulation; }
 }
 
 /* ── Mode switcher: floating bottom pill on mobile ───── */
@@ -1841,18 +1856,21 @@ img { display: block; max-width: 100%; }
 @media (max-width: 900px) {
   .sidebar-boxy {
     transform: translateX(-100%);
-    width: min(280px, 84vw);
+    width: min(300px, 86vw);
     box-shadow: var(--shadow-xl);
     transition: transform 0.25s ease;
     z-index: 500;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   .sidebar-boxy.open { transform: translateX(0); }
-  .sidebar-boxy.collapsed { width: min(280px, 84vw); }
+  .sidebar-boxy.collapsed { width: min(300px, 86vw); }
   .sidebar-boxy.collapsed .sl-txt { display: inline; }
   .sidebar-boxy.collapsed .sb-store-card { display: flex; }
   .sidebar-boxy.collapsed .sb-pro-tag { display: inline-block; }
   .sidebar-boxy.collapsed .sb-cat { display: block; }
-  .sidebar-boxy .sb-collapse { text-align: center; }
+  .sidebar-boxy .sb-collapse { display: none; }
+  .sidebar-boxy .sb-top { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
   .owner-main-boxy,
   .owner-main-boxy.sb-collapsed { margin-left: 0; }
 }
@@ -1898,24 +1916,60 @@ img { display: block; max-width: 100%; }
   .feat-card-boxy { padding: 24px 20px; }
   .btn-fashion { width: 100%; justify-content: center; }
   .team-card { padding: 28px 16px; }
+  .team-section { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
   .results-header-boxy { flex-direction: column; }
   .rh-right { width: 100%; justify-content: space-between; }
   .store-grid-boxy { grid-template-columns: 1fr; }
   .map-boxy { height: 340px; }
   .map-legend-boxy { flex-wrap: wrap; gap: 12px; }
-  .modal-boxy { max-width: 100%; border-radius: 0; position: fixed; bottom: 0; left: 0; right: 0; border-bottom: none; max-height: 88vh; }
+  .modal-boxy {
+    max-width: 100%;
+    border-radius: 0;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    border-bottom: none;
+    max-height: 88vh;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-boxy::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: var(--gray-300);
+    margin: 8px auto 0;
+    flex-shrink: 0;
+  }
   .modal-ov { align-items: flex-end; padding: 0; }
   .modal-ftr-boxy { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
-  .o-section { padding: 20px 16px 40px; }
-  .owner-topbar-boxy { padding: 0 16px; }
-  .o-header-row { flex-wrap: wrap; }
+  .o-section { padding: 20px 16px calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .owner-topbar-boxy {
+    padding: calc(env(safe-area-inset-top, 0px)) 16px 0;
+    height: auto;
+    min-height: 60px;
+    flex-wrap: nowrap;
+  }
+  .topbar-ttl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .o-header-row { flex-wrap: wrap; gap: 12px; }
+  .o-header-row .btn-owner-solid { flex: 1; justify-content: center; display: flex; white-space: normal; }
   .o-title { font-size: 1.25rem; }
   .kpi-row { grid-template-columns: 1fr 1fr; }
   .kpi-val { font-size: 1.4rem; }
   .o-table-boxy, .doc-table-boxy { min-width: 560px; }
-  .table-scroll { -webkit-overflow-scrolling: touch; }
+  .table-scroll { -webkit-overflow-scrolling: touch; margin-bottom: 8px; }
   .charts-grid-boxy { gap: 16px; }
   .dash-two-boxy { gap: 16px; }
+  .listings-tb { flex-wrap: wrap; }
+  .listings-tb .o-sel { min-width: 40%; }
+  .scan-drop-btns { flex-direction: column; align-items: stretch; }
+  .scan-res-actions { flex-direction: column; }
+  .scanner-boxy { max-width: 100%; }
+  .doc-acts { flex-wrap: wrap; }
+  .doc-acts .btn-owner-solid, .doc-acts .btn-owner-outline { flex: 1; min-width: 50%; }
+  .scan-drop { padding: 36px 18px; }
+  .exp-kpi-row .exp-kpi-boxy { min-width: 44%; }
+  .ccard-period { min-height: 44px; }
+  .toast-boxy { bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 640px) {
   .hero-stats-bar { display: grid; grid-template-columns: 1fr 1fr; }
@@ -1944,10 +1998,22 @@ img { display: block; max-width: 100%; }
   .sc-act-btn { padding: 9px 4px; font-size: 0.68rem; }
   .store-preview-boxy { gap: 10px; }
   .kpi-row { grid-template-columns: 1fr; }
-  .pnl-kpi-row { grid-template-columns: 1fr 1fr; }
+  .pnl-kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pnl-kpi-boxy { padding: 16px 14px; }
+  .pk-val { font-size: 1.25rem; }
+  .exp-kpi-row { gap: 10px; }
+  .exp-kpi-boxy { flex: 1 1 100%; }
+  .ekv { font-size: 1.25rem; }
   .form-grid, .form-grid-2 { grid-template-columns: 1fr; }
   .form-g.full { grid-column: span 1; }
   .form-g { padding: 4px 0; }
+  .lc-boxy { padding: 14px; }
+  .lc-acts-boxy { flex-wrap: wrap; gap: 8px; }
+  .lc-acts-boxy .btn-owner-outline { flex: 1 1 100%; padding: 10px; }
+  .res-item-boxy { gap: 10px; flex-wrap: wrap; }
+  .doc-tots { max-width: 100%; margin-left: 0; }
+  .doc-meta { gap: 10px; }
+  .scanner-boxy { padding: 0; }
   .rider-steps-bar { gap: 8px; }
   .rsb-step span { font-size: 0.6rem; }
   .pay-method-grid { gap: 10px; }
