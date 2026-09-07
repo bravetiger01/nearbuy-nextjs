@@ -46,11 +46,47 @@ export default function CustomerNav() {
           <a href="#resultsSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
             <span className="ndl-icon">◎</span> Search
           </a>
-          <a href="#teamSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
-            <span className="ndl-icon">◈</span> Team
-          </a>
-        </nav>
-        <div className="nav-drawer-footer">
+        </div>
+        <div className="c-nav-right">
+          <button className="icon-btn" title="Toggle Dark Mode" onClick={toggleTheme}>
+            <MoonIcon size={16} />
+          </button>
+          <div style={{ position: 'relative' }}>
+            <button className="icon-btn" title="Notifications" onClick={() => setNotifOpen((o) => !o)}>
+              <BellIcon size={16} />
+              <span className="notif-badge">3</span>
+            </button>
+            {notifOpen && (
+              <div className="notif-drop">
+                <div className="notif-item unread">
+                  <div className="nd-dot" />
+                  <div>
+                    <strong>Reservation confirmed</strong> at SVIT Stationery Mart
+                    <br />
+                    <small>2 min ago</small>
+                  </div>
+                </div>
+                <div className="notif-item unread">
+                  <div className="nd-dot" />
+                  <div>
+                    <strong>Rider picked up</strong> your Casio Calculator order
+                    <br />
+                    <small>15 min ago</small>
+                  </div>
+                </div>
+                <div className="notif-item">
+                  <div className="nd-dot read" />
+                  <div>
+                    <strong>New store opened</strong> near you: New Student Zone
+                    <br />
+                    <small>1 hr ago</small>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Shop Owner / Rider Login Buttons */}
           {isOwner ? (
             <button
               className="drawer-cta-btn owner"
@@ -60,13 +96,24 @@ export default function CustomerNav() {
               Go to Dashboard
             </button>
           ) : (
-            <button
-              className="drawer-cta-btn"
-              onClick={() => { openModal('login'); setDrawerOpen(false); }}
-            >
-              <StoreIcon size={15} />
-              Shop Owner Login
-            </button>
+            <>
+              <button
+                className="user-chip"
+                style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => openModal('login')}
+              >
+                <StoreIcon size={13} />
+                SHOP OWNER
+              </button>
+              <button
+                className="user-chip"
+                style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => switchMode('rider')}
+              >
+                <StoreIcon size={13} />
+                RIDER LOGIN
+              </button>
+            </>
           )}
         </div>
       </div>
