@@ -15,6 +15,10 @@ export interface StoreProduct extends Product {
   supplier?: string;
   description?: string;
   image?: string;
+  /** UUID of the shop_products row in Supabase */
+  supabaseId?: string;
+  /** UUID of the shop row in Supabase */
+  shopId?: string;
 }
 
 export interface Store {
@@ -32,6 +36,10 @@ export interface Store {
   hours: string;
   color: string;
   products: Product[];
+  /** Full address string for display */
+  address?: string;
+  /** UUID of the shops row in Supabase (used to scope owner operations) */
+  shopDbId?: string;
 }
 
 export interface StoreResult extends Store {

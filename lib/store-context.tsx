@@ -19,6 +19,7 @@ import {
   INITIAL_PROMOTIONS,
   INITIAL_PAYMENTS,
   createOwnerInventory,
+  LANG_KEYWORDS,
 } from './data';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createClient as createSupabaseClient } from './supabase/client';
@@ -35,6 +36,47 @@ import type {
   StoreResult,
   ToastType,
 } from './types';
+
+// ─── Supabase shop_products ↔ StoreProduct conversion ─────────────────────────
+type RawShopProduct = {
+  id: string;
+  shop_id: string;
+  product_id: string;
+  price: number;
+  mrp: number | null;
+  quantity: number;
+  low_stock_threshold: number | null;
+  discount_percentage: number | null;
+  is_available: boolean;
+  products: {
+    id: string;
+    name: string;
+    description: string | null;
+    brand: string | null;
+    sku: string | null;
+    image_url: string | null;
+  } | null;
+};
+
+function rawToStoreProduct(raw: RawShopProduct, idx: number): StoreProduct {
+  const prod = raw.products;
+  return {
+    id: idx,
+    name: prod?.name ?? 'Unnamed Product',
+    description: prod?.description ?? '',
+    stock: raw.quantity,
+    price: raw.price,
+    costPrice: raw.mrp ? Math.round(raw.mrp * 0.65) : Math.round(raw.price * 0.65),
+    category: 'General',
+    sku: prod?.sku ?? '',
+    supplier: prod?.brand ?? '',
+    image: prod?.image_url ?? '',
+    minThreshold: raw.low_stock_threshold ?? 10,
+    listed: raw.is_available,
+    supabaseId: raw.id,
+    shopId: raw.shop_id,
+  };
+}
 
 export type ModalName =
   | 'login'
@@ -118,6 +160,8 @@ interface AppContextValue {
   setLoggedIn: (v: boolean) => void;
   isOwner: boolean;
   ownerLogout: () => void;
+  ownerShopId: string | null;
+  inventoryLoading: boolean;
 
   ownerInventory: StoreProduct[];
   toggleListing: (idx: number) => void;
@@ -189,6 +233,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
+  // ─── Owner inventory state (must be declared before auth useEffect) ──────────
+  const [ownerShopId, setOwnerShopId] = useState<string | null>(null);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [ownerInventory, setOwnerInventory] = useState<StoreProduct[]>(() => createOwnerInventory());
+  const [editProduct, setEditProduct] = useState<StoreProduct | null>(null);
+
+  // ─── Fetch owner's shop_products from Supabase ──────────────────────────────
+  const fetchOwnerInventory = useCallback(async (client: SupabaseClient, userId: string) => {
+    setInventoryLoading(true);
+    try {
+      const { data: shopData } = await client
+        .from('shops')
+        .select('id')
+        .eq('owner_id', userId)
+        .eq('status', 'active')
+        .limit(1)
+        .single();
+
+      if (!shopData?.id) { setInventoryLoading(false); return; }
+      setOwnerShopId(shopData.id);
+
+      const { data: spData, error } = await client
+        .from('shop_products')
+        .select(`
+          id, shop_id, product_id, price, mrp, quantity,
+          low_stock_threshold, discount_percentage, is_available,
+          products ( id, name, description, brand, sku, image_url )
+        `)
+        .eq('shop_id', shopData.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('fetchOwnerInventory:', error.message);
+      } else if (spData) {
+        setOwnerInventory((spData as RawShopProduct[]).map(rawToStoreProduct));
+      }
+    } catch (e) {
+      console.error('fetchOwnerInventory exception:', e);
+    } finally {
+      setInventoryLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const client = createSupabaseClient();
@@ -205,7 +292,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .maybeSingle();
         if (p.data) {
           setProfile(p.data as Profile);
-          setIsOwner(p.data.role === 'shop_owner');
+          const isShopOwner = p.data.role === 'shop_owner';
+          setIsOwner(isShopOwner);
+          if (isShopOwner) {
+            fetchOwnerInventory(client, s.user.id);
+          }
         }
       }
       setLoadingAuth(false);
@@ -225,13 +316,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .maybeSingle();
           if (p.data) {
             setProfile(p.data as Profile);
-            setIsOwner(p.data.role === 'shop_owner');
+            const isShopOwner = p.data.role === 'shop_owner';
+            setIsOwner(isShopOwner);
+            if (isShopOwner) {
+              fetchOwnerInventory(client, s.user.id);
+            }
           }
         }
       }
       if (event === 'SIGNED_OUT') {
         setProfile(null);
         setIsOwner(false);
+        setOwnerShopId(null);
+        setOwnerInventory(createOwnerInventory());
         setMode('customer');
       }
     });
@@ -239,10 +336,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchOwnerInventory]);
 
-  const [ownerInventory, setOwnerInventory] = useState<StoreProduct[]>(() => createOwnerInventory());
-  const [editProduct, setEditProduct] = useState<StoreProduct | null>(null);
   const [ledger, setLedger] = useState<LedgerEntry[]>(() => INITIAL_LEDGER);
   const [expenses, setExpenses] = useState<Expense[]>(() => INITIAL_EXPENSES);
   const [reservations, setReservations] = useState<Reservation[]>(() => INITIAL_RESERVATIONS);
@@ -283,15 +378,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const handleSearchInput = useCallback((value: string) => {
     setSearchTerm(value);
-    const q = value.trim();
-    if (q.length < 2 || !q) {
+    const rawQ = value.trim();
+    if (rawQ.length < 2 || !rawQ) {
       setSuggestions([]);
       return;
     }
+    const ql = rawQ.toLowerCase();
+    const mapped = LANG_KEYWORDS[ql] || ql;
+
     const all: string[] = [];
     STORES.forEach((s) =>
       s.products.forEach((p) => {
-        if (p.name.toLowerCase().includes(q.toLowerCase()) && !all.includes(p.name)) all.push(p.name);
+        if (p.name.toLowerCase().includes(mapped) && !all.includes(p.name)) all.push(p.name);
       })
     );
     setSuggestions(all.length ? all.slice(0, 6) : []);
@@ -305,10 +403,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
       }
       const ql = query.toLowerCase();
+      const mapped = LANG_KEYWORDS[ql] || ql;
       setCurrentQuery(query);
       setSuggestions([]);
       const results: StoreResult[] = STORES.map((store) => {
-        const matches = store.products.filter((p) => p.name.toLowerCase().includes(ql));
+        const matches = store.products.filter((p) => p.name.toLowerCase().includes(mapped) || p.category.toLowerCase().includes(mapped));
         return { ...store, matchedProducts: matches };
       }).filter((s) => s.matchedProducts.length > 0);
 
@@ -341,25 +440,145 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const toggleListing = useCallback((idx: number) => {
-    setOwnerInventory((prev) => prev.map((p, i) => (i === idx ? { ...p, listed: !p.listed } : p)));
-  }, []);
+    setOwnerInventory((prev) => {
+      const updated = prev.map((p, i) => (i === idx ? { ...p, listed: !p.listed } : p));
+      // Sync to Supabase
+      const item = updated[idx];
+      if (item?.supabaseId && supabase) {
+        supabase
+          .from('shop_products')
+          .update({ is_available: item.listed, updated_at: new Date().toISOString() })
+          .eq('id', item.supabaseId)
+          .then(({ error }) => { if (error) console.error('toggleListing sync:', error.message); });
+      }
+      return updated;
+    });
+  }, [supabase]);
 
-  const saveProduct = useCallback((p: Omit<StoreProduct, 'id'> & { id?: number }) => {
+  const saveProduct = useCallback(async (p: Omit<StoreProduct, 'id'> & { id?: number }) => {
+    // Optimistic local update first
     setOwnerInventory((prev) => {
       if (typeof p.id === 'number') {
         return prev.map((x) => (x.id === p.id ? { ...x, ...p, id: x.id } : x));
       }
       return [...prev, { ...p, id: Date.now() }];
     });
-  }, []);
 
-  const deleteProduct = useCallback((idx: number) => {
+    if (!supabase || !ownerShopId) return;
+
+    try {
+      // 1. Upsert into global products table
+      let productId = '';
+      if (p.supabaseId) {
+        // Editing existing — get product_id from shop_products row
+        const { data: sp } = await supabase
+          .from('shop_products')
+          .select('product_id')
+          .eq('id', p.supabaseId)
+          .single();
+        productId = sp?.product_id ?? '';
+      }
+
+      if (!productId) {
+        // Try to match existing product by name
+        const { data: existing } = await supabase
+          .from('products')
+          .select('id')
+          .ilike('name', p.name.trim())
+          .limit(1)
+          .maybeSingle();
+        productId = existing?.id ?? '';
+      }
+
+      if (!productId) {
+        // Insert new product into global catalog
+        const { data: newProd, error: prodErr } = await supabase
+          .from('products')
+          .insert({
+            name: p.name.trim(),
+            description: p.description ?? null,
+            brand: p.supplier ?? null,
+            sku: p.sku ?? null,
+            image_url: p.image ?? null,
+          })
+          .select('id')
+          .single();
+        if (prodErr || !newProd) {
+          console.error('saveProduct insert product:', prodErr?.message);
+          return;
+        }
+        productId = newProd.id;
+      } else {
+        // Update existing product metadata
+        await supabase
+          .from('products')
+          .update({
+            name: p.name.trim(),
+            description: p.description ?? null,
+            brand: p.supplier ?? null,
+            sku: p.sku ?? null,
+            image_url: p.image ?? null,
+          })
+          .eq('id', productId);
+      }
+
+      // 2. Upsert shop_products
+      const { data: sp, error: spErr } = await supabase
+        .from('shop_products')
+        .upsert({
+          shop_id: ownerShopId,
+          product_id: productId,
+          price: p.price,
+          mrp: p.costPrice ? Math.round(p.costPrice / 0.65) : p.price,
+          quantity: p.stock,
+          low_stock_threshold: p.minThreshold ?? 10,
+          is_available: p.listed,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'shop_id,product_id' })
+        .select('id')
+        .single();
+
+      if (spErr || !sp) {
+        console.error('saveProduct upsert shop_products:', spErr?.message);
+        return;
+      }
+
+      // Patch local state with the real supabaseId
+      setOwnerInventory((prev) =>
+        prev.map((item) =>
+          item.name === p.name && !item.supabaseId
+            ? { ...item, supabaseId: sp.id, shopId: ownerShopId }
+            : item
+        )
+      );
+    } catch (e) {
+      console.error('saveProduct exception:', e);
+    }
+  }, [supabase, ownerShopId]);
+
+  const deleteProduct = useCallback(async (idx: number) => {
+    const item = ownerInventory[idx];
     setOwnerInventory((prev) => prev.filter((_, i) => i !== idx));
-  }, []);
+    if (item?.supabaseId && supabase) {
+      const { error } = await supabase
+        .from('shop_products')
+        .delete()
+        .eq('id', item.supabaseId);
+      if (error) console.error('deleteProduct sync:', error.message);
+    }
+  }, [supabase, ownerInventory]);
 
-  const updateStock = useCallback((id: number, newStock: number) => {
+  const updateStock = useCallback(async (id: number, newStock: number) => {
     setOwnerInventory((prev) => prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p)));
-  }, []);
+    const item = ownerInventory.find((p) => p.id === id);
+    if (item?.supabaseId && supabase) {
+      const { error } = await supabase
+        .from('shop_products')
+        .update({ quantity: newStock, updated_at: new Date().toISOString() })
+        .eq('id', item.supabaseId);
+      if (error) console.error('updateStock sync:', error.message);
+    }
+  }, [supabase, ownerInventory]);
 
   const addTransaction = useCallback((t: Omit<LedgerEntry, 'balance'>) => {
     setLedger((prev) => {
@@ -409,6 +628,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLoggedIn(false);
     setProfile(null);
     setSession(null);
+    setOwnerShopId(null);
+    setOwnerInventory(createOwnerInventory());
     setMode('customer');
     setOwnerSection('dashboard');
   }, [supabase]);
@@ -524,6 +745,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isOwner,
       ownerLogout,
       loginDemo,
+      ownerShopId,
+      inventoryLoading,
       ownerInventory,
       toggleListing,
       saveProduct,
@@ -590,6 +813,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isOwner,
       ownerLogout,
       loginDemo,
+      ownerShopId,
+      inventoryLoading,
       ownerInventory,
       toggleListing,
       saveProduct,

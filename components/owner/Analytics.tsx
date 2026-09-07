@@ -51,7 +51,7 @@ export default function Analytics() {
 
       <div className="chart-card-boxy" style={{ marginBottom: 24 }}>
         <div className="ccard-top">
-          <h3>Revenue Trend</h3>
+          <h3>Sales Trend</h3>
         </div>
         <div style={{ height: 300 }}>
           <Bar
@@ -60,26 +60,34 @@ export default function Analytics() {
               datasets: [
                 {
                   label: 'Revenue (₹)',
+                  type: 'bar' as const,
                   data: data.revenue,
                   backgroundColor: 'rgba(139,92,246,0.8)',
                   borderColor: '#5B21B6',
                   borderWidth: 2,
                   borderRadius: 0,
+                  yAxisID: 'y',
                 },
+                {
+                  type: 'line' as const,
+                  label: 'Orders',
+                  data: data.orders,
+                  borderColor: '#0A0A0A',
+                  backgroundColor: '#0A0A0A',
+                  borderWidth: 2,
+                  pointBackgroundColor: '#0A0A0A',
+                  tension: 0.3,
+                  yAxisID: 'y1',
+                }
               ],
-            }}
+            } as ChartData<'bar'>}
             options={{
               responsive: true,
               maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
+              interaction: { mode: 'index', intersect: false },
               scales: {
-                y: {
-                  type: 'linear',
-                  display: true,
-                  position: 'left',
-                  ticks: { callback: (v) => rupee(Number(v)) },
-                  grid: { color: 'rgba(0,0,0,0.05)' },
-                },
+                y: { type: 'linear', display: true, position: 'left', ticks: { callback: (v) => rupee(Number(v)) } },
+                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } },
               },
             }}
           />
@@ -133,3 +141,4 @@ export default function Analytics() {
     </div>
   );
 }
+

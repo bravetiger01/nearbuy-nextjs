@@ -4,6 +4,7 @@ import type { MouseEvent } from 'react';
 import type { StoreResult } from '../../lib/types';
 import { useApp } from '../../lib/store-context';
 import { BoxIcon, ClockIcon, PinIcon } from '../../lib/icons';
+import Image from 'next/image';
 
 export default function StoreCard({ store }: { store: StoreResult }) {
   const { openProductModal, setRiderCtx, setReserveCtx, openModal } = useApp();
@@ -63,10 +64,17 @@ export default function StoreCard({ store }: { store: StoreResult }) {
         <div className="sc-products">
           <div className="sc-prod-label">MATCHING PRODUCTS</div>
           {shown.map((p) => (
-            <div className="sc-prod-item" key={p.name}>
-              <span className="sc-prod-name">{p.name}</span>
-              <span className="sc-prod-stock">{p.stock} in stock</span>
-              <span className="sc-prod-price">₹{p.price}</span>
+            <div className="sc-prod-item" key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {p.image && (
+                <Image src={p.image} alt={p.name} width={24} height={24} style={{ objectFit: 'contain', borderRadius: '4px' }} />
+              )}
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="sc-prod-name">{p.name}</span>
+                <div>
+                  <span className="sc-prod-stock" style={{ marginRight: '8px' }}>{p.stock} in stock</span>
+                  <span className="sc-prod-price">₹{p.price}</span>
+                </div>
+              </div>
             </div>
           ))}
           {store.matchedProducts.length > 3 && (
