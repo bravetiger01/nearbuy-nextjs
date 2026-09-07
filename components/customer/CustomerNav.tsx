@@ -24,7 +24,7 @@ function ReservationTimer({ time }: { time: string }) {
 }
 
 export default function CustomerNav() {
-  const { toggleTheme, openModal, loggedIn, isOwner, switchMode, reservations } = useApp();
+  const { toggleTheme, openModal, loggedIn, isOwner, switchMode, reservations = [] } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -56,47 +56,6 @@ export default function CustomerNav() {
           <a href="#resultsSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
             <span className="ndl-icon">◎</span> Search
           </a>
-        </div>
-        <div className="c-nav-right">
-          <button className="icon-btn" title="Toggle Dark Mode" onClick={toggleTheme}>
-            <MoonIcon size={16} />
-          </button>
-          <div style={{ position: 'relative' }}>
-            <button className="icon-btn" title="Notifications" onClick={() => setNotifOpen((o) => !o)}>
-              <BellIcon size={16} />
-              <span className="notif-badge">3</span>
-            </button>
-            {notifOpen && (
-              <div className="notif-drop">
-                <div className="notif-item unread">
-                  <div className="nd-dot" />
-                  <div>
-                    <strong>Reservation confirmed</strong> at SVIT Stationery Mart
-                    <br />
-                    <small>2 min ago</small>
-                  </div>
-                </div>
-                <div className="notif-item unread">
-                  <div className="nd-dot" />
-                  <div>
-                    <strong>Rider picked up</strong> your Casio Calculator order
-                    <br />
-                    <small>15 min ago</small>
-                  </div>
-                </div>
-                <div className="notif-item">
-                  <div className="nd-dot read" />
-                  <div>
-                    <strong>New store opened</strong> near you: New Student Zone
-                    <br />
-                    <small>1 hr ago</small>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Shop Owner / Rider Login Buttons */}
           <a href="/about" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
             <span className="ndl-icon">◈</span> About
           </a>
@@ -143,6 +102,7 @@ export default function CustomerNav() {
             <a href="#featSection" className="nav-link">Features</a>
             <a href="#riderSection" className="nav-link">Book Rider</a>
             <a href="#resultsSection" className="nav-link">Search</a>
+            <a href="/about" className="nav-link">About</a>
           </div>
 
           <div className="c-nav-right">
