@@ -7,17 +7,28 @@ import 'leaflet/dist/leaflet.css';
 
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 
-// Fix for default marker icons in react-leaflet
-const DefaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+// Brutalist custom icons
+const createPinIcon = (color: string) => {
+  return L.divIcon({
+    className: 'custom-leaflet-icon',
+    html: `<div style="display: flex; justify-content: center; align-items: center;">
+      <svg width="36" height="48" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(4px 4px 0px #000);">
+        <path d="M12 2C6.47715 2 2 6.47715 2 12C2 21 12 34 12 34C12 34 22 21 22 12C22 6.47715 17.5228 2 12 2Z" fill="${color}" stroke="#000" stroke-width="2.5"/>
+        <circle cx="12" cy="12" r="4" fill="#fff" stroke="#000" stroke-width="2.5"/>
+      </svg>
+    </div>`,
+    iconSize: [36, 48],
+    iconAnchor: [18, 48],
+    popupAnchor: [0, -48],
+  });
+};
+
+const riderMarkerIcon = createPinIcon('#ffea00');
+const pickupMarkerIcon = createPinIcon('#ff69b4'); // Pink
+const dropoffMarkerIcon = createPinIcon('#3b82f6'); // Blue
 
 function RoutingMachine({ start, end }: { start: [number, number]; end: [number, number] }) {
   const map = useMap();
@@ -32,7 +43,7 @@ function RoutingMachine({ start, end }: { start: [number, number]; end: [number,
       addWaypoints: false,
       show: false, // hide instructions
       lineOptions: {
-        styles: [{ color: '#8b5cf6', weight: 4 }],
+        styles: [{ color: '#000', weight: 5 }],
         extendToWaypoints: true,
         missingRouteTolerance: 10,
       },
@@ -57,16 +68,29 @@ export default function ActiveDelivery({
   const isAccepted = job.status === 'accepted';
   const isPickedUp = job.status === 'picked_up';
 
-  // Mock Rider Location (starts somewhere nearby)
-  const riderCoords: [number, number] = [22.4680, 73.0750];
+  const [riderLocation, setRiderLocation] = useState<[number, number]>([22.4680, 73.0750]);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          setRiderLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => console.error("Error getting location", error),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+      return () => navigator.geolocation.clearWatch(watchId);
+    }
+  }, []);
+
   const shopCoords = job.shopCoords || [22.4674, 73.0763];
   const customerCoords = job.customerCoords || [22.4700, 73.0790];
 
-  const startCoords = isAccepted ? riderCoords : shopCoords;
+  const startCoords = riderLocation;
   const endCoords = isAccepted ? shopCoords : customerCoords;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'monospace' }}>
       {/* Map Area */}
       <div style={{ flex: 1, backgroundColor: '#e5e7eb', position: 'relative', zIndex: 0 }}>
         {/* We use standard react-leaflet MapContainer */}
@@ -77,16 +101,16 @@ export default function ActiveDelivery({
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
 
           <RoutingMachine start={startCoords} end={endCoords} />
 
-          <Marker position={startCoords}>
-            <Popup>{isAccepted ? 'You (Rider)' : 'Shop'}</Popup>
+          <Marker position={startCoords} icon={riderMarkerIcon}>
+            <Popup>You (Rider)</Popup>
           </Marker>
-          <Marker position={endCoords}>
+          <Marker position={endCoords} icon={isAccepted ? pickupMarkerIcon : dropoffMarkerIcon}>
             <Popup>{isAccepted ? 'Shop (Pickup)' : 'Customer (Drop-off)'}</Popup>
           </Marker>
         </MapContainer>
@@ -98,10 +122,10 @@ export default function ActiveDelivery({
             top: 15,
             left: 15,
             right: 15,
-            backgroundColor: 'var(--white)',
+            backgroundColor: '#fff',
             padding: '10px 15px',
-            borderRadius: 8,
-            boxShadow: 'var(--shadow)',
+            border: '3px solid #000',
+            boxShadow: '4px 4px 0px #000',
             zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
@@ -110,14 +134,14 @@ export default function ActiveDelivery({
         >
           <div
             style={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: isAccepted ? 'var(--lav-500)' : '#10B981',
+              width: 16,
+              height: 16,
+              backgroundColor: isAccepted ? '#000' : '#10B981',
+              border: '2px solid #000',
             }}
           />
-          <div style={{ fontWeight: 600 }}>
-            {isAccepted ? 'Head to pickup location' : 'Deliver to customer'}
+          <div style={{ fontWeight: 900, textTransform: 'uppercase' }}>
+            {isAccepted ? 'HEAD TO PICKUP LOCATION' : 'DELIVER TO CUSTOMER'}
           </div>
         </div>
       </div>
@@ -125,34 +149,31 @@ export default function ActiveDelivery({
       {/* Info Panel */}
       <div
         style={{
-          backgroundColor: 'var(--white)',
+          backgroundColor: '#fff',
           padding: 20,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          boxShadow: '0 -4px 15px rgba(0,0,0,0.1)',
+          borderTop: '4px solid #000',
           zIndex: 10,
-          marginTop: -15,
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
           <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>Total Earnings</div>
-            <div style={{ fontWeight: 700, fontSize: '1.2rem' }}>₹{job.fee}</div>
+            <div style={{ fontWeight: 900, textTransform: 'uppercase' }}>EARNINGS</div>
+            <div style={{ fontWeight: 900, fontSize: '1.5rem' }}>₹{job.fee}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>Distance left</div>
-            <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--lav-700)' }}>
-              {isAccepted ? `${job.distanceKm} km` : '0.5 km'}
+            <div style={{ fontWeight: 900, textTransform: 'uppercase' }}>DISTANCE</div>
+            <div style={{ fontWeight: 900, fontSize: '1.5rem' }}>
+              {isAccepted ? `${job.distanceKm} KM` : '0.5 KM'}
             </div>
           </div>
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 5 }}>
-            {isAccepted ? 'Pickup At:' : 'Deliver To:'}
+          <div style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: 5 }}>
+            {isAccepted ? 'PICKUP AT:' : 'DELIVER TO:'}
           </div>
-          <div style={{ fontWeight: 600 }}>{isAccepted ? job.shopName : 'Customer'}</div>
-          <div style={{ fontSize: '0.9rem', color: 'var(--gray-500)' }}>
+          <div style={{ fontWeight: 900, fontSize: '1.2rem' }}>{isAccepted ? job.shopName : 'CUSTOMER'}</div>
+          <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>
             {isAccepted ? job.shopAddress : job.customerAddress}
           </div>
         </div>
@@ -163,16 +184,16 @@ export default function ActiveDelivery({
             style={{
               width: '100%',
               padding: 15,
-              backgroundColor: 'var(--black)',
+              backgroundColor: '#000',
               color: '#fff',
               border: 'none',
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: '1rem',
+              fontWeight: 900,
+              fontSize: '1.2rem',
               cursor: 'pointer',
+              textTransform: 'uppercase',
             }}
           >
-            I&apos;ve Picked Up the Order
+            ORDER PICKED UP
           </button>
         )}
 
@@ -184,14 +205,14 @@ export default function ActiveDelivery({
               padding: 15,
               backgroundColor: '#10B981',
               color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: '1rem',
+              border: '4px solid #000',
+              fontWeight: 900,
+              fontSize: '1.2rem',
               cursor: 'pointer',
+              textTransform: 'uppercase',
             }}
           >
-            Mark as Delivered
+            MARK DELIVERED
           </button>
         )}
       </div>

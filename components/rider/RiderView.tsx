@@ -37,10 +37,12 @@ const MOCK_JOBS: DeliveryJob[] = [
   },
 ];
 
+import RiderProfile from './RiderProfile';
+
 export default function RiderView() {
   const { isRider } = useApp();
   const [isOnline, setIsOnline] = useState(false);
-  const [activeTab, setActiveTab] = useState<'jobs' | 'map' | 'profile'>('jobs');
+  const [activeTab, setActiveTab] = useState<'jobs' | 'profile'>('jobs');
   const [jobs, setJobs] = useState<DeliveryJob[]>(MOCK_JOBS);
   const [activeJob, setActiveJob] = useState<DeliveryJob | null>(null);
 
@@ -52,7 +54,7 @@ export default function RiderView() {
       const updatedJob = { ...job, status: 'accepted' as const };
       setActiveJob(updatedJob);
       setJobs(jobs.filter((j) => j.id !== jobId));
-      setActiveTab('map');
+      setActiveTab('jobs');
     }
   };
 
@@ -76,15 +78,16 @@ export default function RiderView() {
         height: '100vh',
         width: '100vw',
         maxWidth: '100%',
-        backgroundColor: 'var(--bg)',
-        color: 'var(--fg)',
+        backgroundColor: '#fff',
+        color: '#000',
         overflow: 'hidden',
         position: 'relative',
+        fontFamily: 'monospace',
       }}
     >
       <RiderHeader isOnline={isOnline} setIsOnline={setIsOnline} />
 
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '70px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '70px', display: 'flex', flexDirection: 'column' }}>
         {activeTab === 'jobs' && !activeJob && (
           <AvailableJobs
             isOnline={isOnline}
@@ -93,26 +96,15 @@ export default function RiderView() {
           />
         )}
         
-        {(activeTab === 'map' || activeJob) && activeJob && (
+        {activeTab === 'jobs' && activeJob && (
           <ActiveDelivery
             job={activeJob}
             onUpdateStatus={handleUpdateJobStatus}
           />
         )}
 
-        {activeTab === 'jobs' && activeJob && (
-           <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-500)' }}>
-             You have an active delivery in progress. Check the Map tab.
-           </div>
-        )}
-
         {activeTab === 'profile' && (
-          <div style={{ padding: 20 }}>
-            <h2>Rider Profile</h2>
-            <p style={{ color: 'var(--gray-500)', marginTop: 10 }}>Earnings: ₹1250 today</p>
-            <p style={{ color: 'var(--gray-500)', marginTop: 10 }}>Deliveries: 15</p>
-            <p style={{ color: 'var(--gray-500)', marginTop: 10 }}>Rating: 4.8 ⭐</p>
-          </div>
+          <RiderProfile />
         )}
       </div>
 
