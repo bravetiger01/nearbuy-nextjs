@@ -16,12 +16,17 @@ import {
   INITIAL_EXPENSES,
   INITIAL_LEDGER,
   INITIAL_RESERVATIONS,
+  INITIAL_PROMOTIONS,
+  INITIAL_PAYMENTS,
   createOwnerInventory,
 } from './data';
 import type {
+  ChatMessage,
   Expense,
   LedgerEntry,
   Mode,
+  Payment,
+  Promotion,
   Reservation,
   RiderContext,
   StoreProduct,
@@ -91,11 +96,14 @@ interface AppContextValue {
 
   loggedIn: boolean;
   setLoggedIn: (v: boolean) => void;
+  isOwner: boolean;
+  ownerLogout: () => void;
 
   ownerInventory: StoreProduct[];
   toggleListing: (idx: number) => void;
   saveProduct: (p: Omit<StoreProduct, 'id'> & { id?: number }) => void;
   deleteProduct: (idx: number) => void;
+  updateStock: (id: number, newStock: number) => void;
   editProduct: StoreProduct | null;
   setEditProduct: (p: StoreProduct | null) => void;
 
@@ -107,6 +115,18 @@ interface AppContextValue {
 
   reservations: Reservation[];
   addReservation: (r: Reservation) => void;
+
+  promotions: Promotion[];
+  addPromotion: (p: Promotion) => void;
+  togglePromotion: (id: string) => void;
+  deletePromotion: (id: string) => void;
+
+  payments: Payment[];
+  addPayment: (p: Payment) => void;
+
+  chatMessages: ChatMessage[];
+  addChatMessage: (m: ChatMessage) => void;
+  clearChat: () => void;
 
   riderCtx: RiderContext | null;
   setRiderCtx: (c: RiderContext | null) => void;
@@ -143,12 +163,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [lang, setLang] = useState('en-US');
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   const [ownerInventory, setOwnerInventory] = useState<StoreProduct[]>(() => createOwnerInventory());
   const [editProduct, setEditProduct] = useState<StoreProduct | null>(null);
   const [ledger, setLedger] = useState<LedgerEntry[]>(() => INITIAL_LEDGER);
   const [expenses, setExpenses] = useState<Expense[]>(() => INITIAL_EXPENSES);
   const [reservations, setReservations] = useState<Reservation[]>(() => INITIAL_RESERVATIONS);
+  const [promotions, setPromotions] = useState<Promotion[]>(() => INITIAL_PROMOTIONS);
+  const [payments, setPayments] = useState<Payment[]>(() => INITIAL_PAYMENTS);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   const [riderCtx, setRiderCtx] = useState<RiderContext | null>(null);
   const [reserveCtx, setReserveCtx] = useState<ReserveContext | null>(null);
@@ -257,6 +281,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOwnerInventory((prev) => prev.filter((_, i) => i !== idx));
   }, []);
 
+  const updateStock = useCallback((id: number, newStock: number) => {
+    setOwnerInventory((prev) => prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p)));
+  }, []);
+
   const addTransaction = useCallback((t: Omit<LedgerEntry, 'balance'>) => {
     setLedger((prev) => {
       const lastBal = prev[0]?.balance ?? 124680;
@@ -271,6 +299,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addReservation = useCallback((r: Reservation) => {
     setReservations((prev) => [r, ...prev]);
+  }, []);
+
+  const addPromotion = useCallback((p: Promotion) => {
+    setPromotions((prev) => [p, ...prev]);
+  }, []);
+
+  const togglePromotion = useCallback((id: string) => {
+    setPromotions((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
+  }, []);
+
+  const deletePromotion = useCallback((id: string) => {
+    setPromotions((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const addPayment = useCallback((p: Payment) => {
+    setPayments((prev) => [p, ...prev]);
+  }, []);
+
+  const addChatMessage = useCallback((m: ChatMessage) => {
+    setChatMessages((prev) => [...prev, m]);
+  }, []);
+
+  const clearChat = useCallback(() => {
+    setChatMessages([]);
+  }, []);
+
+  const ownerLogout = useCallback(() => {
+    setIsOwner(false);
+    setLoggedIn(false);
+    setMode('customer');
+    setOwnerSection('dashboard');
   }, []);
 
   const openProductModal = useCallback((storeId: number) => {
@@ -313,10 +372,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMobileSidebarOpen(false);
   }, []);
 
+  // Expose setIsOwner via setLoggedIn for owner login
+  const handleSetLoggedIn = useCallback((v: boolean) => {
+    setLoggedIn(v);
+  }, []);
+
+  // We need to expose isOwner setter separately; we'll do it via a special mechanism
+  // The login modal will call switchMode('owner') which triggers mode change
+  // We intercept switchMode to also set isOwner
+  const handleSwitchMode = useCallback((m: Mode) => {
+    setMode(m);
+    if (m === 'owner') {
+      setIsOwner(true);
+    }
+  }, []);
+
   const value = useMemo<AppContextValue>(
     () => ({
       mode,
-      switchMode,
+      switchMode: handleSwitchMode,
       theme,
       toggleTheme,
       toast,
@@ -342,11 +416,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lang,
       setLang,
       loggedIn,
-      setLoggedIn,
+      setLoggedIn: handleSetLoggedIn,
+      isOwner,
+      ownerLogout,
       ownerInventory,
       toggleListing,
       saveProduct,
       deleteProduct,
+      updateStock,
       editProduct,
       setEditProduct,
       ledger,
@@ -355,6 +432,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addExpense,
       reservations,
       addReservation,
+      promotions,
+      addPromotion,
+      togglePromotion,
+      deletePromotion,
+      payments,
+      addPayment,
+      chatMessages,
+      addChatMessage,
+      clearChat,
       riderCtx,
       setRiderCtx,
       reserveCtx,
@@ -370,7 +456,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
     [
       mode,
-      switchMode,
+      handleSwitchMode,
       theme,
       toggleTheme,
       toast,
@@ -391,10 +477,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       aiRecs,
       lang,
       loggedIn,
+      handleSetLoggedIn,
+      isOwner,
+      ownerLogout,
       ownerInventory,
       toggleListing,
       saveProduct,
       deleteProduct,
+      updateStock,
       editProduct,
       setEditProduct,
       ledger,
@@ -403,6 +493,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addExpense,
       reservations,
       addReservation,
+      promotions,
+      addPromotion,
+      togglePromotion,
+      deletePromotion,
+      payments,
+      addPayment,
+      chatMessages,
+      addChatMessage,
+      clearChat,
       riderCtx,
       reserveCtx,
       productStoreId,

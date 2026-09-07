@@ -8,6 +8,12 @@ export interface Product {
 export interface StoreProduct extends Product {
   id: number;
   listed: boolean;
+  sku?: string;
+  costPrice?: number;
+  minThreshold?: number;
+  supplier?: string;
+  description?: string;
+  image?: string;
 }
 
 export interface Store {
@@ -76,6 +82,33 @@ export interface RiderContext {
   productName: string;
   price: number;
   storeName?: string;
+}
+
+export interface Promotion {
+  id: string;
+  name: string;
+  products: string[];
+  discountPct: number;
+  startDate: string;
+  endDate: string;
+  active: boolean;
+}
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  customer: string;
+  amount: number;
+  method: 'cash' | 'upi' | 'card' | 'online';
+  date: string;
+  status: 'paid' | 'pending' | 'failed';
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  ts: number;
 }
 
 export type Mode = 'customer' | 'owner';
