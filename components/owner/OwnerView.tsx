@@ -13,6 +13,11 @@ import Expenses from './Expenses';
 import PnL from './PnL';
 import Bank from './Bank';
 import SettingsView from './SettingsView';
+import Analytics from './Analytics';
+import Promotions from './Promotions';
+import Payments from './Payments';
+import AIAssistant from './AIAssistant';
+import Storefront from './Storefront';
 
 export default function OwnerView() {
   const { sidebarCollapsed, ownerSection, mobileSidebarOpen, closeMobileSidebar } = useApp();
@@ -34,10 +39,20 @@ function DashboardKey({ ownerSection }: { ownerSection: string }) {
       return <Dashboard />;
     case 'listings':
       return <Listings />;
+    case 'storefront':
+      return <Storefront />;
     case 'inventory':
       return <Inventory />;
     case 'scanner':
       return <Scanner />;
+    case 'analytics':
+      return <Analytics />;
+    case 'promotions':
+      return <Promotions />;
+    case 'payments':
+      return <Payments />;
+    case 'assistant':
+      return <AIAssistant />;
     case 'invoice':
     case 'proforma':
     case 'quotation':
