@@ -20,6 +20,8 @@ import {
   INITIAL_PAYMENTS,
   createOwnerInventory,
 } from './data';
+import type { Session, SupabaseClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from './supabase/client';
 import type {
   ChatMessage,
   Expense,
@@ -61,6 +63,19 @@ interface ReserveContext {
   storeName?: string;
 }
 
+export type ProfileRole = 'customer' | 'rider' | 'shop_owner' | 'admin';
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  role: ProfileRole;
+  is_active: boolean | null;
+  created_at?: string;
+}
+
 interface AppContextValue {
   mode: Mode;
   switchMode: (m: Mode) => void;
@@ -94,6 +109,11 @@ interface AppContextValue {
   lang: string;
   setLang: (v: string) => void;
 
+  supabase: SupabaseClient | null;
+  session: Session | null;
+  profile: Profile | null;
+  loadingAuth: boolean;
+  loginDemo: (role: 'shop_owner' | 'customer') => void;
   loggedIn: boolean;
   setLoggedIn: (v: boolean) => void;
   isOwner: boolean;
@@ -162,8 +182,64 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const [lang, setLang] = useState('en-US');
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const client = createSupabaseClient();
+    setSupabase(client);
+
+    client.auth.getSession().then(async ({ data: { session: s } }) => {
+      setSession(s);
+      setLoggedIn(!!s);
+      if (s?.user) {
+        const p = await client
+          .from('profiles')
+          .select('*')
+          .eq('id', s.user.id)
+          .maybeSingle();
+        if (p.data) {
+          setProfile(p.data as Profile);
+          setIsOwner(p.data.role === 'shop_owner');
+        }
+      }
+      setLoadingAuth(false);
+    });
+
+    const {
+      data: { subscription },
+    } = client.auth.onAuthStateChange(async (event, s) => {
+      setSession(s);
+      setLoggedIn(!!s);
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (s?.user) {
+          const p = await client
+            .from('profiles')
+            .select('*')
+            .eq('id', s.user.id)
+            .maybeSingle();
+          if (p.data) {
+            setProfile(p.data as Profile);
+            setIsOwner(p.data.role === 'shop_owner');
+          }
+        }
+      }
+      if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        setIsOwner(false);
+        setMode('customer');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const [ownerInventory, setOwnerInventory] = useState<StoreProduct[]>(() => createOwnerInventory());
   const [editProduct, setEditProduct] = useState<StoreProduct | null>(null);
@@ -325,11 +401,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setChatMessages([]);
   }, []);
 
-  const ownerLogout = useCallback(() => {
+  const ownerLogout = useCallback(async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setIsOwner(false);
     setLoggedIn(false);
+    setProfile(null);
+    setSession(null);
     setMode('customer');
     setOwnerSection('dashboard');
+  }, [supabase]);
+
+  const loginDemo = useCallback((role: 'shop_owner' | 'customer') => {
+    const isShopOwner = role === 'shop_owner';
+    const mockProfile: Profile = {
+      id: isShopOwner
+        ? 'a0000000-0000-0000-0000-000000000001'
+        : 'a0000000-0000-0000-0000-000000000002',
+      full_name: isShopOwner ? 'Shop Owner Admin' : 'Demo Customer',
+      email: isShopOwner ? 'admin@gmail.com' : 'customer@gmail.com',
+      phone: null,
+      avatar_url: null,
+      role,
+      is_active: true,
+    };
+    setProfile(mockProfile);
+    setLoggedIn(true);
+    setIsOwner(isShopOwner);
+    if (isShopOwner) setMode('owner');
   }, []);
 
   const openProductModal = useCallback((storeId: number) => {
@@ -415,10 +515,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resultsRef,
       lang,
       setLang,
+      supabase,
+      session,
+      profile,
+      loadingAuth,
       loggedIn,
       setLoggedIn: handleSetLoggedIn,
       isOwner,
       ownerLogout,
+      loginDemo,
       ownerInventory,
       toggleListing,
       saveProduct,
@@ -476,10 +581,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       quickSearch,
       aiRecs,
       lang,
+      supabase,
+      session,
+      profile,
+      loadingAuth,
       loggedIn,
       handleSetLoggedIn,
       isOwner,
       ownerLogout,
+      loginDemo,
       ownerInventory,
       toggleListing,
       saveProduct,
