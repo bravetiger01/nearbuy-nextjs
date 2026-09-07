@@ -351,12 +351,12 @@ export const SNAP_PRODUCTS: SnapProduct[] = [
 ];
 
 export const SCANNED_BILL_PRODUCTS: ScannedProduct[] = [
-  { name: 'Classmate Notebook A4 (200pg)', qty: 50, unitPrice: 105, category: 'Notebooks' },
-  { name: 'Reynolds Pen Blue (Box/20)', qty: 10, unitPrice: 75, category: 'Pens' },
-  { name: 'Apsara Pencil HB (Box/10)', qty: 20, unitPrice: 30, category: 'Pens' },
-  { name: 'A4 Paper Ream 500 sheets', qty: 5, unitPrice: 310, category: 'Paper' },
-  { name: 'Geometry Box Camlin', qty: 15, unitPrice: 160, category: 'Math' },
-  { name: 'Highlighter Set 5 colours', qty: 8, unitPrice: 85, category: 'Pens' },
+  { name: 'Classmate Notebook A4 (200pg)', qty: 50, unitPrice: 105, sellingPrice: 135, category: 'Notebooks', hsn: '', include: true },
+  { name: 'Reynolds Pen Blue (Box/20)', qty: 10, unitPrice: 75, sellingPrice: 95, category: 'Pens', hsn: '', include: true },
+  { name: 'Apsara Pencil HB (Box/10)', qty: 20, unitPrice: 30, sellingPrice: 40, category: 'Pens', hsn: '', include: true },
+  { name: 'A4 Paper Ream 500 sheets', qty: 5, unitPrice: 310, sellingPrice: 380, category: 'Paper', hsn: '', include: true },
+  { name: 'Geometry Box Camlin', qty: 15, unitPrice: 160, sellingPrice: 210, category: 'Math', hsn: '', include: true },
+  { name: 'Highlighter Set 5 colours', qty: 8, unitPrice: 85, sellingPrice: 120, category: 'Pens', hsn: '', include: true },
 ];
 
 export function createOwnerInventory(): StoreProduct[] {

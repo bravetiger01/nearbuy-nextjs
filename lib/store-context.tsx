@@ -25,6 +25,7 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createClient as createSupabaseClient } from './supabase/client';
 import type {
   ChatMessage,
+  DeliveryJob,
   Expense,
   LedgerEntry,
   Mode,
@@ -311,6 +312,9 @@ interface AppContextValue {
 
   riderCtx: RiderContext | null;
   setRiderCtx: (c: RiderContext | null) => void;
+  riderJobs: DeliveryJob[];
+  riderLoading: boolean;
+  loadRiderJobs: () => Promise<void>;
   reserveCtx: ReserveContext | null;
   setReserveCtx: (c: ReserveContext | null) => void;
   productStoreId: number | null;
@@ -322,6 +326,82 @@ interface AppContextValue {
   mobileSidebarOpen: boolean;
   toggleSidebar: () => void;
   closeMobileSidebar: () => void;
+}
+
+// ─── Rider jobs (Supabase-backed) ────────────────────────────────────────────
+type RiderShopRow = {
+  id: string;
+  name: string;
+  address_line_1: string | null;
+  address_line_2: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  status: string | null;
+};
+
+type RiderOrderRow = {
+  id: string;
+  status: string;
+  delivery_fee: number | null;
+  delivery_address_id: string | null;
+  shops: {
+    id: string;
+    name: string;
+    address_line_1: string | null;
+    address_line_2: string | null;
+    city: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
+  addresses: {
+    label: string | null;
+    address_line_1: string | null;
+    city: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
+};
+
+const RIDER_DROPOFFS: { label: string; coords: [number, number] }[] = [
+  { label: 'Hostel Block A, SVIT Campus', coords: [22.47, 73.079] },
+  { label: 'Hostel Block C, SVIT Campus', coords: [22.4738, 73.0731] },
+  { label: 'Gandhi Chowk, Vasad', coords: [22.4521, 73.0782] },
+  { label: 'Shreenath Residency, Umreth Road', coords: [22.4609, 73.0854] },
+];
+
+const SVIT_FALLBACK: [number, number] = [22.4674, 73.0763];
+
+function haversineKm(a: [number, number], b: [number, number]): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(b[0] - a[0]);
+  const dLng = toRad(b[1] - a[1]);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+function roundDistanceKm(km: number): number {
+  return Math.max(0.5, Math.round(km * 10) / 10);
+}
+
+function feeFromDistance(km: number): number {
+  const raw = 30 + km * 8;
+  return Math.round(raw / 5) * 5;
+}
+
+function formatShopAddress(s: { address_line_1: string | null; address_line_2?: string | null; city: string | null }): string {
+  return [s.address_line_1, s.address_line_2, s.city].filter(Boolean).join(', ');
+}
+
+function shopCoords(s: { latitude: number | null; longitude: number | null }): [number, number] | null {
+  return typeof s.latitude === 'number' && typeof s.longitude === 'number'
+    ? [s.latitude, s.longitude]
+    : null;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -629,6 +709,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [ownerInventory]);
 
   const [riderCtx, setRiderCtx] = useState<RiderContext | null>(null);
+  const [riderJobs, setRiderJobs] = useState<DeliveryJob[]>([]);
+  const [riderLoading, setRiderLoading] = useState(false);
   const [reserveCtx, setReserveCtx] = useState<ReserveContext | null>(null);
   const [productStoreId, setProductStoreId] = useState<number | null>(null);
 
@@ -656,6 +738,91 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const switchMode = useCallback((m: Mode) => {
     setMode(m);
   }, []);
+
+  const loadRiderJobs = useCallback(async () => {
+    if (!supabase) return;
+    setRiderLoading(true);
+    try {
+      const shopsRes = await supabase
+        .from('shops')
+        .select(
+          'id,name,address_line_1,address_line_2,city,state,pincode,latitude,longitude,status'
+        )
+        .eq('status', 'active');
+      const shops: RiderShopRow[] = shopsRes.data ?? [];
+
+      const orderBased: DeliveryJob[] = [];
+      try {
+        const ordersRes = await supabase
+          .from('orders')
+          .select(
+            `id,status,delivery_fee,delivery_address_id,
+             shops(id,name,address_line_1,address_line_2,city,latitude,longitude),
+             addresses:delivery_address_id(label,address_line_1,city,latitude,longitude)`
+          )
+          .in('status', ['pending', 'confirmed', 'preparing', 'ready_for_pickup'])
+          .limit(25);
+        const orders = ((ordersRes.data ?? []) as unknown as Array<{
+          id: string;
+          status: string;
+          delivery_fee: number | null;
+          delivery_address_id: string | null;
+          shops: RiderOrderRow['shops'] | RiderOrderRow['shops'][];
+          addresses: RiderOrderRow['addresses'] | RiderOrderRow['addresses'][];
+        }>);
+        orders.forEach((o) => {
+          const shop = Array.isArray(o.shops) ? o.shops[0] ?? null : o.shops;
+          const addr = Array.isArray(o.addresses) ? o.addresses[0] ?? null : o.addresses;
+          const pickup = shop ? shopCoords(shop) : null;
+          const dropoff = addr ? shopCoords(addr) : null;
+          const pickupCoords: [number, number] = pickup ?? SVIT_FALLBACK;
+          const dropoffCoords: [number, number] = dropoff ?? SVIT_FALLBACK;
+          const distanceKm = roundDistanceKm(haversineKm(pickupCoords, dropoffCoords));
+          orderBased.push({
+            id: o.id,
+            shopName: shop?.name ?? 'Unknown Shop',
+            shopAddress: shop ? formatShopAddress(shop) : '',
+            customerAddress: addr
+              ? `${addr.label ?? 'Customer'} — ${formatShopAddress(addr)}`
+              : 'Customer — Vasad, Gujarat',
+            distanceKm,
+            fee: o.delivery_fee && o.delivery_fee > 0 ? o.delivery_fee : feeFromDistance(distanceKm),
+            status: 'available',
+            shopCoords: pickupCoords,
+            customerCoords: dropoffCoords,
+          });
+        });
+      } catch (e) {
+        console.error('loadRiderJobs orders query error:', e);
+      }
+
+      const fallback: DeliveryJob[] = shops
+        .filter((s) => shopCoords(s) !== null)
+        .map((s, i) => {
+          const pickup = shopCoords(s)!;
+          const dropoff = RIDER_DROPOFFS[i % RIDER_DROPOFFS.length];
+          const distanceKm = roundDistanceKm(haversineKm(pickup, dropoff.coords));
+          return {
+            id: `shop-${s.id}`,
+            shopName: s.name,
+            shopAddress: formatShopAddress(s) || s.city || 'Vasad, Gujarat',
+            customerAddress: `Customer — ${dropoff.label}`,
+            distanceKm,
+            fee: feeFromDistance(distanceKm),
+            status: 'available',
+            shopCoords: pickup,
+            customerCoords: dropoff.coords,
+          };
+        });
+
+      setRiderJobs(orderBased.length > 0 ? orderBased : fallback);
+    } catch (e) {
+      console.error('loadRiderJobs exception:', e);
+      setRiderJobs([]);
+    } finally {
+      setRiderLoading(false);
+    }
+  }, [supabase]);
 
   const toggleTheme = useCallback(() => {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
@@ -1184,6 +1351,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       clearChat,
       riderCtx,
       setRiderCtx,
+      riderJobs,
+      riderLoading,
+      loadRiderJobs,
       reserveCtx,
       setReserveCtx,
       productStoreId,
@@ -1263,6 +1433,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addChatMessage,
       clearChat,
       riderCtx,
+      riderJobs,
+      riderLoading,
+      loadRiderJobs,
       reserveCtx,
       productStoreId,
       openProductModal,

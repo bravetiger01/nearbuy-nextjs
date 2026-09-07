@@ -6,10 +6,12 @@ export default function AvailableJobs({
   isOnline,
   jobs,
   onAcceptJob,
+  loading = false,
 }: {
   isOnline: boolean;
   jobs: DeliveryJob[];
   onAcceptJob: (id: string) => void;
+  loading?: boolean;
 }) {
   if (!isOnline) {
     return (
@@ -23,8 +25,8 @@ export default function AvailableJobs({
   if (jobs.length === 0) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-500)' }}>
-        <p>No delivery requests nearby right now.</p>
         <div className="spinner" style={{ margin: '20px auto' }} />
+        <p>{loading ? 'Fetching deliveries from nearby stores…' : 'No delivery requests nearby right now.'}</p>
       </div>
     );
   }

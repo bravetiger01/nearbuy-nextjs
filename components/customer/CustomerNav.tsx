@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
-import { BellIcon, MoonIcon, StoreIcon, UserIcon } from '../../lib/icons';
+import { BellIcon, MoonIcon, StoreIcon, TruckIcon, UserIcon } from '../../lib/icons';
 
 function ReservationTimer({ time }: { time: string }) {
   const [remaining, setRemaining] = useState('');
@@ -66,13 +66,23 @@ export default function CustomerNav() {
               <StoreIcon size={15} /> Go to Dashboard
             </button>
           ) : (
-            <button
-              className="drawer-cta-btn"
-              onClick={() => { openModal('login'); setDrawerOpen(false); }}
-            >
-              <StoreIcon size={15} />
-              Shop Owner Login
-            </button>
+            <>
+              <button
+                className="drawer-cta-btn"
+                onClick={() => { openModal('login'); setDrawerOpen(false); }}
+              >
+                <StoreIcon size={15} />
+                Shop Owner Login
+              </button>
+              <button
+                className="drawer-cta-btn"
+                style={{ marginTop: 8, background: 'var(--lav-500)', borderColor: 'var(--lav-700)' }}
+                onClick={() => { switchMode('rider'); setDrawerOpen(false); }}
+              >
+                <TruckIcon size={15} />
+                Rider Login
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -185,6 +195,11 @@ export default function CustomerNav() {
                 <span className="chip-txt">SHOP OWNER</span>
               </button>
             )}
+
+            <button className="user-chip" title="Open Rider app" style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => switchMode('rider')}>
+              <TruckIcon size={13} />
+              <span className="chip-txt">RIDER</span>
+            </button>
 
             <div
               className="user-chip"
