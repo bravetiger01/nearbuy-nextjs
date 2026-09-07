@@ -30,7 +30,8 @@ export const STORES: Store[] = [
     hours: '9:00 AM – 9:00 PM',
     color: '#8B5CF6',
     products: [
-      { name: 'Classmate Notebook A4 (200 pages)', stock: 45, price: 120, category: 'Notebooks' },
+      { name: 'Youva Notebook by Navneet', stock: 45, price: 120, category: 'Notebooks', image: '/products/youva_notebook.jpg' },
+      { name: 'DOMS Student Notebook', stock: 20, price: 55, category: 'Notebooks', image: '/products/doms_notebook.jpg' },
       { name: 'Reynolds Pen Blue (Pack of 10)', stock: 30, price: 85, category: 'Pens' },
       { name: 'Geometry Box Camlin', stock: 12, price: 180, category: 'Math' },
       { name: 'Scientific Calculator Casio fx-82MS', stock: 5, price: 850, category: 'Electronics' },
@@ -55,7 +56,8 @@ export const STORES: Store[] = [
     hours: '8:00 AM – 8:00 PM',
     color: '#A78BFA',
     products: [
-      { name: 'Classmate Notebook A4 (200 pages)', stock: 60, price: 115, category: 'Notebooks' },
+      { name: 'Navneet HQ Notebook A5', stock: 60, price: 175, category: 'Notebooks', image: '/products/navneet_notebook.jpg' },
+      { name: 'DOMS Student Notebook', stock: 35, price: 45, category: 'Notebooks', image: '/products/doms_notebook.jpg' },
       { name: 'Apsara Pencil HB (Box of 10)', stock: 40, price: 35, category: 'Pens' },
       { name: 'Plastic Scale 30 cm', stock: 100, price: 10, category: 'Math' },
       { name: 'Sticky Notes Multicolour (100 pcs)', stock: 15, price: 55, category: 'Office' },
@@ -126,7 +128,8 @@ export const STORES: Store[] = [
     color: '#4C1D95',
     products: [
       { name: 'Complete Stationery Kit', stock: 15, price: 120, category: 'Office' },
-      { name: 'Classmate Notebook A4 (200 pages)', stock: 80, price: 118, category: 'Notebooks' },
+      { name: 'Navneet HQ Notebook A5', stock: 80, price: 165, category: 'Notebooks', image: '/products/navneet_notebook.jpg' },
+      { name: 'Youva Notebook by Navneet', stock: 110, price: 140, category: 'Notebooks', image: '/products/youva_notebook.jpg' },
       { name: 'Scientific Calculator Casio fx-82MS', stock: 10, price: 840, category: 'Electronics' },
       { name: 'Drawing Instruments Set', stock: 6, price: 250, category: 'Math' },
       { name: 'Geometry Box Camlin', stock: 20, price: 180, category: 'Math' },

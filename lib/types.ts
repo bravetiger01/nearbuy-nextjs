@@ -3,6 +3,7 @@ export interface Product {
   stock: number;
   price: number;
   category: string;
+  image?: string;
 }
 
 export interface StoreProduct extends Product {
