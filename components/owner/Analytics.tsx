@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ChartData } from 'chart.js';
 import { useApp } from '../../lib/store-context';
 import { Bar, Doughnut, rupee } from '../../lib/charts';
 import { ANALYTICS_DATA, BEST_SELLERS, SLOW_MOVERS } from '../../lib/data';
@@ -61,6 +62,7 @@ export default function Analytics() {
               datasets: [
                 {
                   label: 'Revenue (₹)',
+                  type: 'bar' as const,
                   data: data.revenue,
                   backgroundColor: 'rgba(139,92,246,0.8)',
                   borderColor: '#5B21B6',
@@ -80,7 +82,7 @@ export default function Analytics() {
                   yAxisID: 'y1',
                 }
               ],
-            }}
+            } as ChartData<'bar'>}
             options={{
               responsive: true,
               maintainAspectRatio: false,
