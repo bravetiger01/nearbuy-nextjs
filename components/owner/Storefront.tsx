@@ -133,6 +133,226 @@ export default function Storefront() {
           </tbody>
         </table>
       )}
+      <style jsx>{`
+        .storefront-preview-container {
+          display: flex;
+          gap: 40px;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin-top: 24px;
+        }
+        .mobile-frame {
+          width: 320px;
+          height: 600px;
+          border: 12px solid #111;
+          border-radius: 36px;
+          position: relative;
+          background: #fff;
+          overflow: hidden;
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+          flex-shrink: 0;
+        }
+        .mf-notch {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 120px;
+          height: 24px;
+          background: #111;
+          border-bottom-left-radius: 12px;
+          border-bottom-right-radius: 12px;
+          z-index: 10;
+        }
+        .mf-content {
+          height: 100%;
+          overflow-y: auto;
+          position: relative;
+        }
+        .mf-content::-webkit-scrollbar {
+          display: none;
+        }
+        .mf-header-bg {
+          height: 120px;
+        }
+        .mf-store-info {
+          padding: 0 16px;
+          margin-top: -30px;
+          text-align: center;
+        }
+        .mf-avatar-wrap {
+          width: 72px;
+          height: 72px;
+          background: #fff;
+          border-radius: 50%;
+          margin: 0 auto 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          position: relative;
+        }
+        .mf-avatar {
+          width: 100%;
+          height: 100%;
+          background: #333;
+          color: #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 1.2rem;
+        }
+        .mf-online-badge {
+          position: absolute;
+          bottom: 4px;
+          right: 4px;
+          width: 14px;
+          height: 14px;
+          background: #10B981;
+          border: 2px solid #fff;
+          border-radius: 50%;
+        }
+        .mf-store-name {
+          font-size: 1.1rem;
+          font-weight: 800;
+          margin-bottom: 4px;
+        }
+        .mf-store-meta {
+          font-size: 0.75rem;
+          color: #666;
+          margin-bottom: 12px;
+        }
+        .mf-store-details {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .mfd-item {
+          font-size: 0.75rem;
+          color: #555;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .mf-promo-banner {
+          background: #FEF3C7;
+          color: #92400E;
+          padding: 8px;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          margin-bottom: 16px;
+        }
+        .mf-tabs {
+          display: flex;
+          border-bottom: 1px solid #eee;
+          margin-bottom: 16px;
+        }
+        .mf-tab {
+          flex: 1;
+          text-align: center;
+          padding: 10px 0;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #888;
+        }
+        .mf-tab.active {
+          color: var(--lav-700);
+          border-bottom: 2px solid var(--lav-700);
+        }
+        .mf-products-area {
+          padding: 0 16px 24px;
+        }
+        .mf-product-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .mf-product-card {
+          display: flex;
+          align-items: center;
+          padding: 12px;
+          border: 1px solid #eee;
+          border-radius: 12px;
+        }
+        .mfp-info {
+          flex: 1;
+        }
+        .mfp-name {
+          font-size: 0.85rem;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+        .mfp-desc {
+          font-size: 0.7rem;
+          color: #888;
+          margin-bottom: 6px;
+        }
+        .mfp-price {
+          font-size: 0.85rem;
+          font-weight: 700;
+        }
+        .mfp-old-price {
+          font-size: 0.7rem;
+          color: #999;
+          text-decoration: line-through;
+          margin-left: 6px;
+          font-weight: normal;
+        }
+        .mfp-add-btn {
+          background: var(--lav-100);
+          color: var(--lav-700);
+          border: none;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 0.75rem;
+          font-weight: 700;
+        }
+        .mfp-oos {
+          font-size: 0.7rem;
+          color: #ef4444;
+          font-weight: 600;
+        }
+        .storefront-stats {
+          flex: 1;
+          min-width: 280px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .ss-card {
+          padding: 20px;
+          border: var(--brd);
+          border-radius: var(--r-sm);
+          background: #fff;
+          box-shadow: var(--shadow-sm);
+        }
+        .ssc-label {
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: #666;
+          letter-spacing: 0.05em;
+          margin-bottom: 8px;
+        }
+        .ssc-val {
+          font-size: 2rem;
+          font-weight: 800;
+          margin-bottom: 4px;
+        }
+        .ssc-trend.up {
+          color: #10b981;
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+        .ssc-sub {
+          font-size: 0.8rem;
+          color: #888;
+        }
+      `}</style>
     </div>
   );
 }
