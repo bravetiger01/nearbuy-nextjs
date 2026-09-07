@@ -35,8 +35,8 @@ function RoutingMachine({ start, end }: { start: [number, number]; end: [number,
 
   useEffect(() => {
     if (!map) return;
-    const routingControl = L.Routing.control({
-      plan: L.Routing.plan([L.latLng(start[0], start[1]), L.latLng(end[0], end[1])], {
+    const routingControl = (L as any).Routing.control({
+      plan: (L as any).Routing.plan([L.latLng(start[0], start[1]), L.latLng(end[0], end[1])], {
         createMarker: () => false, // Return false to disable default markers
       }),
       routeWhileDragging: false,
@@ -48,7 +48,7 @@ function RoutingMachine({ start, end }: { start: [number, number]; end: [number,
         missingRouteTolerance: 10,
       },
       fitSelectedRoutes: true,
-    } as L.Routing.RoutingControlOptions).addTo(map);
+    }).addTo(map);
 
     return () => {
       map.removeControl(routingControl);

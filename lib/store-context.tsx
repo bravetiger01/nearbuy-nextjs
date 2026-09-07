@@ -1160,6 +1160,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addTransaction,
       expenses,
       addExpense,
+      deleteExpense,
       reservations,
       addReservation,
       promotions,
