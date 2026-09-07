@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useApp } from '../../lib/store-context';
-import { BellIcon, LogoMark, MoonIcon, UserIcon } from '../../lib/icons';
+import { BellIcon, LogoMark, MoonIcon, StoreIcon, UserIcon } from '../../lib/icons';
 
 export default function CustomerNav() {
-  const { toggleTheme, openModal, loggedIn } = useApp();
+  const { toggleTheme, openModal, loggedIn, isOwner, switchMode } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
 
   return (
@@ -63,13 +63,35 @@ export default function CustomerNav() {
               </div>
             )}
           </div>
+
+          {/* Shop Owner Login Button */}
+          {isOwner ? (
+            <button
+              className="user-chip"
+              style={{ background: 'var(--lav-500)', borderColor: 'var(--lav-700)', cursor: 'pointer' }}
+              onClick={() => switchMode('owner')}
+            >
+              <StoreIcon size={14} />
+              DASHBOARD
+            </button>
+          ) : (
+            <button
+              className="user-chip"
+              style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => openModal('login')}
+            >
+              <StoreIcon size={13} />
+              SHOP OWNER LOGIN
+            </button>
+          )}
+
           <div
             className="user-chip"
-            style={{ cursor: 'pointer' }}
-            onClick={() => (loggedIn ? undefined : openModal('login'))}
+            style={{ cursor: 'pointer', background: loggedIn ? 'var(--lav-700)' : undefined }}
+            onClick={() => (!loggedIn ? openModal('login') : undefined)}
           >
             <UserIcon size={14} />
-            {loggedIn ? 'OWNER' : 'LOGIN'}
+            {loggedIn ? 'YOU' : 'LOGIN'}
           </div>
         </div>
       </div>

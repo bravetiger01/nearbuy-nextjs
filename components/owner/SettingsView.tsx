@@ -1,13 +1,26 @@
 'use client';
 
 import { useApp } from '../../lib/store-context';
+import { UserIcon } from '../../lib/icons';
 
 export default function SettingsView() {
-  const { showToast } = useApp();
+  const { showToast, ownerLogout } = useApp();
+  
   return (
     <div className="o-section active">
-      <h2 className="o-title">Store Settings</h2>
-      <div className="settings-boxy">
+      <div className="o-header-row">
+        <h2 className="o-title">Store Settings</h2>
+        <button 
+          className="btn-owner-outline" 
+          onClick={ownerLogout}
+          style={{ borderColor: '#FECACA', color: '#B91C1C', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <UserIcon size={14} /> LOGOUT
+        </button>
+      </div>
+      
+      <div className="settings-boxy" style={{ marginBottom: 24 }}>
+        <h3 style={{ fontFamily: 'var(--display)', fontSize: '1.1rem', marginBottom: 16 }}>Store Information</h3>
         <div className="form-grid">
           {[
             ['STORE NAME', 'SVIT Stationery Mart'],
@@ -50,6 +63,49 @@ export default function SettingsView() {
         <button className="btn-owner-solid" onClick={() => showToast('Settings saved!', 'success')}>
           SAVE SETTINGS
         </button>
+      </div>
+
+      <div className="settings-boxy">
+        <h3 style={{ fontFamily: 'var(--display)', fontSize: '1.1rem', marginBottom: 16 }}>Subscription Plan</h3>
+        <div className="pricing-grid">
+          <div className="pricing-card active">
+            <div className="pc-badge">CURRENT PLAN</div>
+            <h4>Free Plan</h4>
+            <div className="pc-price">₹0<span>/month</span></div>
+            <ul className="pc-feats">
+              <li>✓ Basic Storefront</li>
+              <li>✓ Up to 50 Products</li>
+              <li>✓ Standard Search listing</li>
+            </ul>
+            <button className="btn-owner-outline" disabled>ACTIVE</button>
+          </div>
+
+          <div className="pricing-card">
+            <h4>Smart+</h4>
+            <div className="pc-price">₹499<span>/month</span></div>
+            <ul className="pc-feats">
+              <li>✓ Everything in Free</li>
+              <li>✓ Unlimited Products</li>
+              <li>✓ Basic Sales Analytics</li>
+              <li>✓ Promotions feature</li>
+            </ul>
+            <button className="btn-owner-solid" onClick={() => showToast('Redirecting to payment gateway...', 'info')}>UPGRADE</button>
+          </div>
+
+          <div className="pricing-card pro">
+            <div className="pc-badge">RECOMMENDED</div>
+            <h4>Smart+ Pro</h4>
+            <div className="pc-price">₹999<span>/month</span></div>
+            <ul className="pc-feats">
+              <li>✓ Everything in Smart+</li>
+              <li>✓ AI Business Assistant</li>
+              <li>✓ AI Bill Scanner</li>
+              <li>✓ Advanced Analytics</li>
+              <li>✓ Priority Search placement</li>
+            </ul>
+            <button className="btn-owner-solid" onClick={() => showToast('Redirecting to payment gateway...', 'info')}>UPGRADE</button>
+          </div>
+        </div>
       </div>
     </div>
   );
