@@ -278,6 +278,7 @@ interface AppContextValue {
 
   expenses: Expense[];
   addExpense: (e: Expense) => void;
+  deleteExpense: (id: string) => void;
 
   reservations: Reservation[];
   addReservation: (r: Reservation) => void;
@@ -678,8 +679,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (p.name.toLowerCase().includes(mapped) && !all.includes(p.name)) all.push(p.name);
       })
     );
+    ownerInventory.forEach((p) => {
+      if (p.listed && p.name.toLowerCase().includes(mapped) && !all.includes(p.name)) all.push(p.name);
+    });
     setSuggestions(all.length ? all.slice(0, 6) : []);
-  }, []);
+  }, [ownerInventory]);
 
   const doSearch = useCallback(
     (q?: string) => {
@@ -693,8 +697,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCurrentQuery(query);
       setSuggestions([]);
       const results: StoreResult[] = STORES.map((store) => {
-        const matches = store.products.filter((p) => p.name.toLowerCase().includes(mapped) || p.category.toLowerCase().includes(mapped));
-        return { ...store, matchedProducts: matches };
+        // Mock injection of owner products if they belong to this mock store
+        let dynamicProducts = store.products;
+        if (store.name === 'SVIT Stationery Mart' && ownerInventory.length > 0) {
+          const ownerListed = ownerInventory.filter(p => p.listed).map(p => ({
+            name: p.name,
+            category: p.category,
+            price: p.price,
+            stock: p.stock,
+            image: p.image,
+            description: p.description
+          }));
+          // Merge avoiding duplicates by name
+          const merged = [...dynamicProducts];
+          ownerListed.forEach(op => {
+            if (!merged.find(m => m.name === op.name)) merged.push(op);
+          });
+          dynamicProducts = merged;
+        }
+
+        const matches = dynamicProducts.filter((p) => p.name.toLowerCase().includes(mapped) || p.category.toLowerCase().includes(mapped));
+        return { ...store, products: dynamicProducts, matchedProducts: matches };
       }).filter((s) => s.matchedProducts.length > 0);
 
       setRawResults(results);
@@ -912,6 +935,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else if (data) {
         setExpenses((prev) => prev.map((x) => x.date === e.date && x.name === e.name ? { ...x, supabaseId: data.id } : x));
       }
+    }
+  }, [supabase, ownerShopId]);
+
+  const deleteExpense = useCallback(async (id: string) => {
+    setExpenses((prev) => prev.filter(e => e.supabaseId !== id && e.name + e.date !== id));
+    if (supabase && ownerShopId && !id.includes('-mock-')) {
+      const { error } = await supabase.from('expenses').delete().eq('id', id);
+      if (error) console.error('deleteExpense sync:', error.message);
     }
   }, [supabase, ownerShopId]);
 

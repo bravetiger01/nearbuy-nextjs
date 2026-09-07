@@ -1,88 +1,43 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
 import { GlobeIcon, MicIcon, CameraIcon, SearchIcon, PinIcon } from '../../lib/icons';
+import Grainient from '../Grainient';
 
-const QUICK_TAGS = ['Notebook', 'Pen', 'Medicine', 'Calculator', 'Chopdi', 'Dawai'];
+const QUICK_TAGS = ['Notebook', 'Pen', 'Avil', 'Cetirizine', 'Dulcolax', 'Cremaffin', 'Calculator', 'Zyrtec'];
 
 export default function HeroSection() {
   const { searchTerm, handleSearchInput, doSearch, quickSearch, suggestions, openModal, lang, setLang } = useApp();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Animated floating particles on canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animId: number;
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const particles: { x: number; y: number; r: number; vx: number; vy: number; opacity: number }[] = [];
-    const N = Math.min(40, Math.floor(canvas.width / 20));
-    for (let i = 0; i < N; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2.5 + 0.5,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        opacity: Math.random() * 0.5 + 0.1,
-      });
-    }
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(139,92,246,${p.opacity})`;
-        ctx.fill();
-      });
-      // Draw connecting lines between nearby particles
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(167,139,250,${0.12 * (1 - dist / 100)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
-      }
-      animId = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
 
   return (
     <section className="hero-section" id="heroSection">
-      {/* Particle canvas */}
-      <canvas ref={canvasRef} className="hero-canvas" aria-hidden="true" />
+      {/* Grainient Background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.55 }}>
+        <Grainient
+          color1="#7C3AED"
+          color2="#340e74"
+          color3="#1a0a3c"
+          timeSpeed={1.8}
+          colorBalance={-0.03}
+          warpStrength={1.0}
+          warpFrequency={5.0}
+          warpSpeed={2.0}
+          warpAmplitude={50.0}
+          blendAngle={0.0}
+          blendSoftness={0.05}
+          rotationAmount={500.0}
+          noiseScale={2.0}
+          grainAmount={0.1}
+          grainScale={2.0}
+          grainAnimated={false}
+          contrast={1.5}
+          gamma={1.1}
+          saturation={1.0}
+          zoom={0.9}
+        />
+      </div>
 
       {/* Geometric decorations */}
       <div className="geo-dec geo-tl" />
@@ -90,7 +45,8 @@ export default function HeroSection() {
       <div className="geo-dec geo-br" />
       <div className="geo-line geo-line-h" />
 
-      <div className="hero-inner-centered">
+      <div className="hero-inner-centered" style={{ position: 'relative', zIndex: 2 }}>
+        
         {/* Official logo with shine */}
         <div className="hero-logo-wrap">
           <div className="hero-logo-glow" />
@@ -180,6 +136,23 @@ export default function HeroSection() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Placed Hero Image correctly in flow */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            margin: '32px 0 16px',
+            animation: 'float 6s ease-in-out infinite',
+          }}>
+            <Image
+              src="/hero.png"
+              alt="Nearbuy Delivery"
+              width={250}
+              height={250}
+              style={{ objectFit: 'contain', filter: 'drop-shadow(0 20px 25px rgba(0,0,0,0.1))' }}
+              priority
+            />
           </div>
 
           {/* Quick tags */}

@@ -2,67 +2,51 @@
 
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
-import { VideoIcon } from '../../lib/icons';
-
-const STORE_CHIPS = ['Zudio', 'H&M', 'Max', 'Westside', 'FBB', 'Trends'];
 
 export default function FashionSection() {
   const { openModal } = useApp();
   return (
-    <section className="fashion-section" id="fashionSection">
+    <section className="fashion-section" id="riderSection">
       <div className="section-wrap">
-        <div className="fashion-inner">
+        <div className="fashion-inner" style={{ flexDirection: 'row-reverse' }}>
           <div className="fashion-text">
-            <div className="section-eyebrow light">NEW FEATURE — SHOP LIVE</div>
+            <div className="section-eyebrow light">INSTANT DELIVERY</div>
             <h2 className="fashion-heading">
-              Can&apos;t go to the store?
+              Need it now?
               <br />
-              Your personal
-              <br />
-              <span className="fashion-accent">Style Guide</span> goes for you.
+              Book a <span className="fashion-accent">Local Rider</span>
             </h2>
             <p className="fashion-desc">
-              Pick any fashion store. Our personal shopper goes there, video calls you from the store, shows you options
-              live — you pick what you want, they buy it, and deliver it to your door.
+              Don't want to step out? Find your product, reserve it, and instantly book a trusted local rider to deliver it right to your doorstep within 15 minutes.
             </p>
             <div className="fashion-steps">
               <div className="f-step">
                 <div className="f-step-num">01</div>
-                <div className="f-step-text">Pick your store &amp; preferences (size, budget, style)</div>
+                <div className="f-step-text">Search and locate your item at a nearby Vasad store.</div>
               </div>
               <div className="f-step">
                 <div className="f-step-num">02</div>
-                <div className="f-step-text">Our Style Guide goes to the store &amp; video calls you</div>
+                <div className="f-step-text">Reserve the item and select 'Book Rider'.</div>
               </div>
               <div className="f-step">
                 <div className="f-step-num">03</div>
-                <div className="f-step-text">You see it live, say &quot;get that one&quot; — they buy &amp; deliver</div>
+                <div className="f-step-text">A rider picks it up and delivers it in minutes.</div>
               </div>
             </div>
-            <button className="btn-fashion" onClick={() => openModal('fashion')}>
-              <VideoIcon size={16} />
-              BOOK A STYLE GUIDE — ₹49 FLAT
+            <button className="btn-fashion" onClick={() => openModal('rider')}>
+              BOOK A RIDER NOW
             </button>
           </div>
           <div className="fashion-img-col">
-            <div className="fashion-img-frame">
+            <div className="fashion-img-frame" style={{ background: 'transparent', boxShadow: 'none' }}>
               <Image
-                src="/style-advisor.png"
-                alt="Personal style guide shopping for you live"
+                src="/hero.png" 
+                alt="Local rider delivery"
                 className="fashion-img"
                 width={500}
                 height={500}
+                style={{ filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.15))' }}
               />
-              <div className="fashion-stores-grid">
-                {STORE_CHIPS.map((s) => (
-                  <div className="f-store-chip" key={s}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#8B5CF6">
-                      <circle cx="12" cy="12" r="10" />
-                    </svg>
-                    {s}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>

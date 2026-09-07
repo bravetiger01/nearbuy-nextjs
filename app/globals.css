@@ -38,19 +38,21 @@
   --primary-lt:var(--lav-300);
   --primary-bg:var(--lav-50);
 
-  /* Boxy Design System */
-  --brd:        2px solid var(--black);
-  --brd-light:  1px solid var(--gray-200);
-  --brd-lav:    1.5px solid var(--lav-300);
-  --shadow:     4px 4px 0 0 var(--black);
-  --shadow-sm:  2px 2px 0 0 var(--black);
-  --shadow-lg:  6px 6px 0 0 var(--black);
-  --shadow-xl:  8px 8px 0 0 var(--black);
-  --shadow-lav: 4px 4px 0 0 var(--lav-400);
+  /* Wavy / Soft UI Design System */
+  --brd:        1px solid var(--gray-200);
+  --brd-light:  1px solid var(--gray-100);
+  --brd-lav:    1.5px solid var(--lav-200);
+  
+  /* Soft, elegant shadows instead of harsh solid ones */
+  --shadow:     0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+  --shadow-sm:  0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.025);
+  --shadow-lg:  0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.03);
+  --shadow-xl:  0 25px 50px -12px rgba(0,0,0,0.15);
+  --shadow-lav: 0 10px 25px -5px rgba(167,139,250,0.25);
 
-  /* No radius — boxy! */
-  --r: 0px;
-  --r-sm: 2px;
+  /* Generous border radii for the 'wavy' feeling */
+  --r: 20px;
+  --r-sm: 12px;
 
   /* Fonts (injected via next/font variables) */
   --font:    var(--font-inter), -apple-system, sans-serif;
@@ -2534,5 +2536,11 @@ body { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
 [data-theme="dark"] .nav-drawer-link:hover { background: var(--lav-100); color: var(--lav-900); }
 [data-theme="dark"] .hero-pill { background: #111; }
 [data-theme="dark"] .hero-pill:hover { background: var(--lav-500); }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
 [data-theme="dark"] .sc-prod-img-wrap { background: #1a1a1a; border-color: var(--gray-200); }
 [data-theme="dark"] .sc-prod-img-fallback { background: var(--lav-100); }
