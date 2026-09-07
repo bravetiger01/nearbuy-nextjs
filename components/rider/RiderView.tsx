@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp } from '../../lib/store-context';
 import { DeliveryJob } from '../../lib/types';
 import RiderHeader from './RiderHeader';
@@ -12,39 +12,22 @@ const ActiveDelivery = dynamic(() => import('./ActiveDelivery'), {
   ssr: false,
 });
 
-const MOCK_JOBS: DeliveryJob[] = [
-  {
-    id: 'job-1',
-    shopName: 'SVIT Stationery Mart',
-    shopAddress: 'SVIT Campus, Vasad',
-    customerAddress: 'Hostel Block A, Room 102',
-    distanceKm: 1.2,
-    fee: 30,
-    status: 'available',
-    shopCoords: [22.4674, 73.0763],
-    customerCoords: [22.4700, 73.0790],
-  },
-  {
-    id: 'job-2',
-    shopName: 'Campus Electronics',
-    shopAddress: 'Main Gate, SVIT',
-    customerAddress: 'Hostel Block C, Room 304',
-    distanceKm: 2.5,
-    fee: 45,
-    status: 'available',
-    shopCoords: [22.4650, 73.0800],
-    customerCoords: [22.4600, 73.0850],
-  },
-];
-
 import RiderProfile from './RiderProfile';
 
 export default function RiderView() {
-  const { isRider } = useApp();
+  const { isRider, riderJobs, riderLoading, loadRiderJobs } = useApp();
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState<'jobs' | 'profile'>('jobs');
-  const [jobs, setJobs] = useState<DeliveryJob[]>(MOCK_JOBS);
+  const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [activeJob, setActiveJob] = useState<DeliveryJob | null>(null);
+
+  useEffect(() => {
+    if (isRider) loadRiderJobs();
+  }, [isRider, loadRiderJobs]);
+
+  useEffect(() => {
+    setJobs(riderJobs.filter((j) => j.id !== activeJob?.id));
+  }, [riderJobs, activeJob?.id]);
 
   if (!isRider) return null;
 
@@ -93,6 +76,7 @@ export default function RiderView() {
             isOnline={isOnline}
             jobs={jobs}
             onAcceptJob={handleAcceptJob}
+            loading={riderLoading}
           />
         )}
         

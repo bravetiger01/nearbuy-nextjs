@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         });
 
         const result = await model.generateContent([
-          { inlineData: { data: base64, mimeType: mimeType as Parameters<typeof model.generateContent>[0][0]['inlineData']['mimeType'] } },
+          { inlineData: { data: base64, mimeType } },
           PROMPT,
         ]);
 

@@ -341,3 +341,79 @@ SELECT
   category, description, amount, created_at::date, payment_method, NULL, created_at
 FROM exp
 ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- 10. RIDER / LOCATION DATA
+-- ------------------------------------------------------------
+-- The 5 seeded shops have NULL latitude/longitude, which makes
+-- the rider side (and store distance calculations) useless.
+-- This section fills real GPS coordinates per shop, registers a
+-- demo rider profile + riders row, and links active orders to
+-- real customer addresses so delivery jobs are fully location-
+-- aware. Idempotent: UPDATEs only fill missing values.
+-- ============================================================
+
+-- ─── 10a. Shop GPS coordinates (Vasad / Vadodara area) ──────────────────────
+UPDATE public.shops SET latitude = 22.3166, longitude = 73.1290 -- Nandesari, Vadodara
+WHERE id = '10000000-0000-0000-0000-000000000001' AND (latitude IS NULL OR longitude IS NULL);
+
+UPDATE public.shops SET latitude = 22.4674, longitude = 73.0763 -- SVIT Campus, Vasad
+WHERE id = '10000000-0000-0000-0000-000000000002' AND (latitude IS NULL OR longitude IS NULL);
+
+UPDATE public.shops SET latitude = 22.4562, longitude = 73.0817 -- Platinum Plaza, Umreth Rd
+WHERE id = '10000000-0000-0000-0000-000000000003' AND (latitude IS NULL OR longitude IS NULL);
+
+UPDATE public.shops SET latitude = 22.4783, longitude = 73.0602 -- Parbdi, Vasad
+WHERE id = '10000000-0000-0000-0000-000000000004' AND (latitude IS NULL OR longitude IS NULL);
+
+UPDATE public.shops SET latitude = 22.4421, longitude = 73.0936 -- Vaherakhadi, SH8
+WHERE id = '10000000-0000-0000-0000-000000000005' AND (latitude IS NULL OR longitude IS NULL);
+
+-- ─── 10b. Customer addresses (drop-off points near SVIT, Vasad) ──────────────
+WITH addr(id, label, line1, city, pincode, lat, lng) AS (
+  VALUES
+    ('30000000-0000-0000-0000-000000000001','Hostel Block A','SVIT Campus, Hostel Block A','Vasad','388306',22.4700,73.0790),
+    ('30000000-0000-0000-0000-000000000002','Hostel Block C','SVIT Campus, Hostel Block C','Vasad','388306',22.4738,73.0731),
+    ('30000000-0000-0000-0000-000000000003','Gandhi Chowk','Gandhi Chowk, Vasad','Vasad','388306',22.4521,73.0782),
+    ('30000000-0000-0000-0000-000000000004','Shreenath Residency','Shreenath Residency, Umreth Road','Vasad','388306',22.4609,73.0854)
+)
+INSERT INTO public.addresses
+  (id, user_id, label, address_line_1, city, state, pincode, latitude, longitude, is_default, created_at)
+SELECT
+  id::uuid,
+  'a0000000-0000-0000-0000-000000000002',
+  label, line1, city, 'Gujarat', pincode, lat, lng,
+  (label = 'Hostel Block A'), NOW()
+FROM addr
+ON CONFLICT (id) DO NOTHING;
+
+-- ─── 10c. Point active (non-delivered) orders at a nearby drop-off address ──
+WITH tagged AS (
+  SELECT o.id AS order_id,
+         (ARRAY[
+           '30000000-0000-0000-0000-000000000001',
+           '30000000-0000-0000-0000-000000000002',
+           '30000000-0000-0000-0000-000000000003',
+           '30000000-0000-0000-0000-000000000004'
+         ])[1 + ((row_number() OVER (ORDER BY o.created_at)) % 4)] AS addr_id
+  FROM public.orders o
+  WHERE o.delivery_address_id IS NULL
+    AND o.status IN ('pending', 'confirmed', 'preparing', 'ready_for_pickup', 'picked_up')
+)
+UPDATE public.orders o
+SET delivery_address_id = t.addr_id::uuid
+FROM tagged t
+WHERE o.id = t.order_id;
+
+-- ─── 10d. Demo rider ─────────────────────────────────────────────────────────
+INSERT INTO public.profiles (id, full_name, phone, avatar_url, role, is_active, created_at, updated_at)
+SELECT 'a0000000-0000-0000-0000-000000000003', 'Demo Rider', '9876500003', NULL, 'rider', true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = 'a0000000-0000-0000-0000-000000000003');
+
+INSERT INTO public.riders
+  (id, user_id, vehicle_type, vehicle_number, license_number, is_available, is_online, rating, total_deliveries, current_latitude, current_longitude, created_at, updated_at)
+SELECT 'b0000000-0000-0000-0000-000000000001',
+       'a0000000-0000-0000-0000-000000000003',
+       'bike', 'GJ 06 AB 4321', 'MH20190012345',
+       true, true, 4.9, 126, 22.4680, 73.0750, NOW(), NOW()
+ON CONFLICT (id) DO NOTHING;
