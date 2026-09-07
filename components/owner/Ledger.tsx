@@ -6,7 +6,7 @@ const fmt = (v: number) => `₹${v.toLocaleString('en-IN')}`;
 
 export default function Ledger() {
   const { ledger, openModal } = useApp();
-  const balance = ledger[0]?.balance ?? 124680;
+  const balance = ledger[0]?.balance ?? 0;
 
   return (
     <div className="o-section active">

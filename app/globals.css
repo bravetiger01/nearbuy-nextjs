@@ -1172,6 +1172,19 @@ img { display: block; max-width: 100%; }
 }
 .ri-status.pending { background: #FFF7ED; color: #B45309; border-color: #FCD34D; }
 .ri-status.confirmed { background: var(--lav-50); color: var(--lav-700); border-color: var(--lav-300); }
+.ri-status.ready { background: #ECFDF5; color: #047857; border-color: #A7F3D0; }
+.ri-status.picked_up { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.ri-status.cancelled { background: #FEF2F2; color: #B91C1C; border-color: #FECACA; }
+.ri-status.expired { background: #F9FAFB; color: #6B7280; border-color: #D1D5DB; }
+
+/* Time range tabs (Analytics) */
+.time-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.time-tab {
+  border: var(--brd); background: var(--white); padding: 8px 14px;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer;
+}
+.time-tab:hover { border-color: var(--lav-500); }
+.time-tab.active { background: var(--black); color: var(--white); border-color: var(--black); }
 
 /* Low stock */
 .ls-item-boxy { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-200); }

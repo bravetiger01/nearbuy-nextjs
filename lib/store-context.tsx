@@ -58,6 +58,108 @@ type RawShopProduct = {
   } | null;
 };
 
+// ─── DB row types for business data ─────────────────────────────────────────
+type RawOrder = {
+  id: string;
+  customer_id: string;
+  shop_id: string;
+  status: string;
+  subtotal: number;
+  delivery_fee: number | null;
+  platform_fee: number | null;
+  discount: number | null;
+  total_amount: number;
+  payment_status: string;
+  created_at: string;
+};
+type RawOrderItem = {
+  id: string;
+  order_id: string;
+  shop_product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+};
+type RawPaymentRow = {
+  id: string;
+  order_id: string;
+  customer_id: string;
+  amount: number;
+  payment_method: string;
+  status: string;
+  paid_at: string | null;
+  transaction_id: string | null;
+  created_at: string;
+};
+type RawTransactionRow = {
+  id: string;
+  shop_id: string;
+  order_id: string | null;
+  transaction_type: string;
+  amount: number;
+  payment_method: string | null;
+  description: string | null;
+  reference_id: string | null;
+  transaction_date: string | null;
+  created_at: string;
+};
+type RawExpenseRow = {
+  id: string;
+  shop_id: string;
+  category: string;
+  description: string;
+  amount: number;
+  expense_date: string;
+  payment_method: string | null;
+  receipt_url: string | null;
+};
+type RawReservationRow = {
+  id: string;
+  customer_id: string;
+  shop_id: string;
+  status: string;
+  notes: string | null;
+  created_at: string;
+};
+type RawReservationItem = {
+  id: string;
+  reservation_id: string;
+  shop_product_id: string;
+  quantity: number;
+  unit_price: number;
+};
+type RawShopViewRow = { id: number; created_at: string };
+type RawPromotion = {
+  id: string;
+  shop_id: string;
+  name: string;
+  budget: number | null;
+  start_date: string;
+  end_date: string;
+  status: string;
+  created_at: string;
+};
+type RawShopData = {
+  id: string;
+  name: string;
+  description: string | null;
+  rating: number | null;
+  total_reviews: number | null;
+  is_open: boolean | null;
+  address_line_1: string | null;
+  address_line_2: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  phone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  status: string;
+};
+
 function rawToStoreProduct(raw: RawShopProduct, idx: number): StoreProduct {
   const prod = raw.products;
   return {
@@ -188,6 +290,18 @@ interface AppContextValue {
   payments: Payment[];
   addPayment: (p: Payment) => void;
 
+  // ─── Owner business data (Supabase-backed) ───────────────────────────────
+  businessLoading: boolean;
+  ownerOrders: RawOrder[];
+  ownerOrderItems: RawOrderItem[];
+  ownerPayments: RawPaymentRow[];
+  ownerTransactions: RawTransactionRow[];
+  ownerExpenses: RawExpenseRow[];
+  ownerReservations: RawReservationRow[];
+  ownerReservationItems: RawReservationItem[];
+  ownerShopViews: RawShopViewRow[];
+  ownerShopData: RawShopData | null;
+
   chatMessages: ChatMessage[];
   addChatMessage: (m: ChatMessage) => void;
   clearChat: () => void;
@@ -267,7 +381,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (error) {
         console.error('fetchOwnerInventory:', error.message);
       } else if (spData) {
-        setOwnerInventory((spData as RawShopProduct[]).map(rawToStoreProduct));
+        setOwnerInventory((spData as unknown as RawShopProduct[]).map(rawToStoreProduct));
       }
     } catch (e) {
       console.error('fetchOwnerInventory exception:', e);
@@ -345,6 +459,171 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [payments, setPayments] = useState<Payment[]>(() => INITIAL_PAYMENTS);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
+  // ─── Owner business data (fetched from Supabase) ───────────────────────────
+  const [ownerOrders, setOwnerOrders] = useState<RawOrder[]>([]);
+  const [ownerOrderItems, setOwnerOrderItems] = useState<RawOrderItem[]>([]);
+  const [ownerPayments, setOwnerPayments] = useState<RawPaymentRow[]>([]);
+  const [ownerTransactions, setOwnerTransactions] = useState<RawTransactionRow[]>([]);
+  const [ownerExpenses, setOwnerExpenses] = useState<RawExpenseRow[]>([]);
+  const [ownerReservations, setOwnerReservations] = useState<RawReservationRow[]>([]);
+  const [ownerReservationItems, setOwnerReservationItems] = useState<RawReservationItem[]>([]);
+  const [ownerShopViews, setOwnerShopViews] = useState<RawShopViewRow[]>([]);
+  const [ownerShopData, setOwnerShopData] = useState<RawShopData | null>(null);
+  const [businessLoading, setBusinessLoading] = useState(false);
+
+  const fetchOwnerBusinessData = useCallback(async (client: SupabaseClient, shopId: string) => {
+    setBusinessLoading(true);
+    try {
+      const [
+        ordersRes, paymentsRes, txRes, expRes, resRes, viewsRes, shopRes, promosRes,
+      ] = await Promise.all([
+        client.from('orders').select('*').eq('shop_id', shopId).order('created_at', { ascending: false }),
+        client.from('payments').select('*').in('order_id',
+          (await client.from('orders').select('id').eq('shop_id', shopId)).data?.map((o: {id:string}) => o.id) ?? ['00000000-0000-0000-0000-000000000000']
+        ),
+        client.from('transactions').select('*').eq('shop_id', shopId).order('transaction_date', { ascending: false }),
+        client.from('expenses').select('*').eq('shop_id', shopId).order('expense_date', { ascending: false }),
+        client.from('reservations').select('*').eq('shop_id', shopId).order('created_at', { ascending: false }),
+        client.from('shop_views').select('id, created_at').eq('shop_id', shopId),
+        client.from('shops').select('*').eq('id', shopId).single(),
+        client.from('promotions').select('*').eq('shop_id', shopId).order('created_at', { ascending: false }),
+      ]);
+
+      if (ordersRes.data) {
+        setOwnerOrders(ordersRes.data as RawOrder[]);
+        // Fetch order items for all orders
+        const orderIds = (ordersRes.data as RawOrder[]).map(o => o.id);
+        if (orderIds.length) {
+          const { data: oiData } = await client.from('order_items').select('*').in('order_id', orderIds);
+          if (oiData) setOwnerOrderItems(oiData as RawOrderItem[]);
+        }
+      }
+      if (paymentsRes.data) setOwnerPayments(paymentsRes.data as RawPaymentRow[]);
+      if (txRes.data) setOwnerTransactions(txRes.data as RawTransactionRow[]);
+      if (expRes.data) setOwnerExpenses(expRes.data as RawExpenseRow[]);
+      if (resRes.data) {
+        setOwnerReservations(resRes.data as RawReservationRow[]);
+        const resIds = (resRes.data as RawReservationRow[]).map(r => r.id);
+        if (resIds.length) {
+          const { data: riData } = await client.from('reservation_items').select('*').in('reservation_id', resIds);
+          if (riData) setOwnerReservationItems(riData as RawReservationItem[]);
+        }
+      }
+      if (viewsRes.data) setOwnerShopViews(viewsRes.data as RawShopViewRow[]);
+      if (shopRes.data) setOwnerShopData(shopRes.data as RawShopData);
+
+      // Also sync mock state so existing components still work before we rewire
+      // Map expenses
+      if (expRes.data) {
+        setExpenses((expRes.data as RawExpenseRow[]).map(e => ({
+          supabaseId: e.id,
+          date: e.expense_date,
+          name: e.description,
+          category: e.category,
+          amount: e.amount,
+        })));
+      }
+      // Map reservations
+      if (resRes.data) {
+        const riByRes = new Map<string, RawReservationItem[]>();
+        // We'll populate reservationItems after fetching
+        const { data: riAll } = resRes.data?.length
+          ? await client.from('reservation_items').select('id, reservation_id, quantity, unit_price, shop_product_id').in('reservation_id', (resRes.data as RawReservationRow[]).map(r => r.id))
+          : { data: [] };
+        (riAll as RawReservationItem[] | null)?.forEach(ri => {
+          const arr = riByRes.get(ri.reservation_id) ?? [];
+          arr.push(ri);
+          riByRes.set(ri.reservation_id, arr);
+        });
+        // Fetch product names from ownerInventory (already loaded)
+        const spNameMap = new Map<string, string>();
+        ownerInventory.forEach(sp => { if (sp.supabaseId) spNameMap.set(sp.supabaseId, sp.name); });
+        // Fallback: fetch product names from shop_products joined
+        const spIds = (riAll as RawReservationItem[] | null)?.map(ri => ri.shop_product_id).filter(Boolean) ?? [];
+        if (spIds.length) {
+          const { data: spData } = await client.from('shop_products').select('id, product_id, products(name)').in('id', spIds);
+          (spData as unknown as {id:string;products?:{name:string}}[] | null)?.forEach(sp => {
+            if (sp?.products?.name) spNameMap.set(sp.id, sp.products.name);
+          });
+        }
+        setReservations((resRes.data as RawReservationRow[]).map(r => {
+          const items = riByRes.get(r.id) ?? [];
+          const productNames = items.map(ri => spNameMap.get(ri.shop_product_id) ?? 'Item').join(', ');
+          const totalQty = items.reduce((sum, ri) => sum + ri.quantity, 0);
+          return {
+            id: r.id,
+            supabaseId: r.id,
+            customer: r.customer_id === 'a0000000-0000-0000-0000-000000000002' ? 'Demo Customer' : 'Customer',
+            product: productNames || 'Multiple items',
+            qty: totalQty || 1,
+            time: r.created_at,
+            status: r.status as Reservation['status'],
+          };
+        }));
+      }
+      // Map payments
+      if (paymentsRes.data) {
+        const custNameMap = new Map<string, string>();
+        const custIds = [...new Set((paymentsRes.data as RawPaymentRow[]).map(p => p.customer_id))];
+        if (custIds.length) {
+          const { data: profs } = await client.from('profiles').select('id, full_name').in('id', custIds);
+          (profs as {id:string;full_name:string|null}[] | null)?.forEach(p => custNameMap.set(p.id, p.full_name ?? 'Customer'));
+        }
+        setPayments((paymentsRes.data as RawPaymentRow[]).map(p => ({
+          supabaseId: p.id,
+          id: p.transaction_id ?? p.id.substring(0, 8),
+          orderId: p.order_id,
+          customer: custNameMap.get(p.customer_id) ?? 'Customer',
+          amount: p.amount,
+          method: p.payment_method as Payment['method'],
+          date: (p.paid_at ?? p.created_at).substring(0, 10),
+          status: p.status as Payment['status'],
+        })));
+      }
+      // Map promotions
+      if (promosRes.data) {
+        setPromotions((promosRes.data as RawPromotion[]).map(p => ({
+          supabaseId: p.id,
+          id: p.id,
+          name: p.name,
+          products: ['All Products'],
+          discountPct: 0,
+          startDate: p.start_date.substring(0, 10),
+          endDate: p.end_date.substring(0, 10),
+          active: p.status === 'active',
+        })));
+      }
+      // Map ledger
+      if (txRes.data) {
+        const txns = txRes.data as RawTransactionRow[];
+        let runningBal = 0;
+        const sorted = [...txns].sort((a, b) => (a.transaction_date ?? a.created_at).localeCompare(b.transaction_date ?? b.created_at));
+        sorted.forEach(tx => {
+          const isCredit = ['sale', 'deposit', 'subscription'].includes(tx.transaction_type);
+          runningBal += isCredit ? tx.amount : -tx.amount;
+        });
+        let bal = runningBal;
+        setLedger(txns.map(tx => {
+          const isCredit = ['sale', 'deposit', 'subscription'].includes(tx.transaction_type);
+          const entry: LedgerEntry = {
+            supabaseId: tx.id,
+            date: (tx.transaction_date ?? tx.created_at).substring(0, 10),
+            desc: tx.description ?? tx.transaction_type,
+            type: isCredit ? 'credit' : 'debit',
+            amount: tx.amount,
+            balance: bal,
+          };
+          if (!isCredit) bal += tx.amount; else bal -= tx.amount;
+          return entry;
+        }));
+      }
+    } catch (e) {
+      console.error('fetchOwnerBusinessData exception:', e);
+    } finally {
+      setBusinessLoading(false);
+    }
+  }, [ownerInventory]);
+
   const [riderCtx, setRiderCtx] = useState<RiderContext | null>(null);
   const [reserveCtx, setReserveCtx] = useState<ReserveContext | null>(null);
   const [productStoreId, setProductStoreId] = useState<number | null>(null);
@@ -356,6 +635,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Fetch business data when ownerShopId is set
+  useEffect(() => {
+    if (ownerShopId && supabase) {
+      fetchOwnerBusinessData(supabase, ownerShopId);
+    }
+  }, [ownerShopId, supabase, fetchOwnerBusinessData]);
 
   const showToast = useCallback((msg: string, type: ToastType = 'info') => {
     setToast({ msg, type });
@@ -580,25 +866,81 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [supabase, ownerInventory]);
 
-  const addTransaction = useCallback((t: Omit<LedgerEntry, 'balance'>) => {
+  const addTransaction = useCallback(async (t: Omit<LedgerEntry, 'balance'>) => {
     setLedger((prev) => {
-      const lastBal = prev[0]?.balance ?? 124680;
+      const lastBal = prev[0]?.balance ?? 0;
       const newBal = t.type === 'credit' ? lastBal + t.amount : lastBal - t.amount;
       return [{ ...t, balance: newBal }, ...prev];
     });
-  }, []);
+    if (supabase && ownerShopId) {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          shop_id: ownerShopId,
+          transaction_type: t.type === 'credit' ? 'sale' : 'expense',
+          amount: t.amount,
+          description: t.desc,
+          transaction_date: `${t.date}T12:00:00+05:30`,
+        })
+        .select('id')
+        .single();
+      if (error) {
+        console.error('addTransaction sync:', error.message);
+      } else if (data) {
+        setLedger((prev) => prev.map((x) => x.desc === t.desc && x.date === t.date && !x.supabaseId ? { ...x, supabaseId: data.id } : x));
+      }
+    }
+  }, [supabase, ownerShopId]);
 
-  const addExpense = useCallback((e: Expense) => {
+  const addExpense = useCallback(async (e: Expense) => {
     setExpenses((prev) => [e, ...prev]);
-  }, []);
+    if (supabase && ownerShopId) {
+      const { data, error } = await supabase
+        .from('expenses')
+        .insert({
+          shop_id: ownerShopId,
+          category: e.category,
+          description: e.name,
+          amount: e.amount,
+          expense_date: e.date,
+          payment_method: 'cash',
+        })
+        .select('id')
+        .single();
+      if (error) {
+        console.error('addExpense sync:', error.message);
+      } else if (data) {
+        setExpenses((prev) => prev.map((x) => x.date === e.date && x.name === e.name ? { ...x, supabaseId: data.id } : x));
+      }
+    }
+  }, [supabase, ownerShopId]);
 
   const addReservation = useCallback((r: Reservation) => {
     setReservations((prev) => [r, ...prev]);
   }, []);
 
-  const addPromotion = useCallback((p: Promotion) => {
+  const addPromotion = useCallback(async (p: Promotion) => {
     setPromotions((prev) => [p, ...prev]);
-  }, []);
+    if (supabase && ownerShopId) {
+      const { data, error } = await supabase
+        .from('promotions')
+        .insert({
+          shop_id: ownerShopId,
+          name: p.name,
+          budget: 0,
+          start_date: p.startDate,
+          end_date: p.endDate,
+          status: p.active ? 'active' : 'paused',
+        })
+        .select('id')
+        .single();
+      if (error) {
+        console.error('addPromotion sync:', error.message);
+      } else if (data) {
+        setPromotions((prev) => prev.map((x) => x.id === p.id ? { ...x, supabaseId: data.id } : x));
+      }
+    }
+  }, [supabase, ownerShopId]);
 
   const togglePromotion = useCallback((id: string) => {
     setPromotions((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
@@ -632,6 +974,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOwnerInventory(createOwnerInventory());
     setMode('customer');
     setOwnerSection('dashboard');
+    // Clear business data
+    setOwnerOrders([]);
+    setOwnerOrderItems([]);
+    setOwnerPayments([]);
+    setOwnerTransactions([]);
+    setOwnerExpenses([]);
+    setOwnerReservations([]);
+    setOwnerReservationItems([]);
+    setOwnerShopViews([]);
+    setOwnerShopData(null);
+    setLedger(INITIAL_LEDGER);
+    setExpenses(INITIAL_EXPENSES);
+    setReservations(INITIAL_RESERVATIONS);
+    setPayments(INITIAL_PAYMENTS);
   }, [supabase]);
 
   const loginDemo = useCallback((role: 'shop_owner' | 'customer') => {
@@ -766,6 +1122,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deletePromotion,
       payments,
       addPayment,
+      businessLoading,
+      ownerOrders,
+      ownerOrderItems,
+      ownerPayments,
+      ownerTransactions,
+      ownerExpenses,
+      ownerReservations,
+      ownerReservationItems,
+      ownerShopViews,
+      ownerShopData,
       chatMessages,
       addChatMessage,
       clearChat,
@@ -834,6 +1200,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deletePromotion,
       payments,
       addPayment,
+      businessLoading,
+      ownerOrders,
+      ownerOrderItems,
+      ownerPayments,
+      ownerTransactions,
+      ownerExpenses,
+      ownerReservations,
+      ownerReservationItems,
+      ownerShopViews,
+      ownerShopData,
       chatMessages,
       addChatMessage,
       clearChat,
