@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { useApp } from '../../lib/store-context';
 import { Bar, Doughnut, rupee } from '../../lib/charts';
-import { RupeeIcon, BoxIcon, EyeIcon, ReserveIcon } from '../../lib/icons';
+import { RupeeIcon, BoxIcon, EyeIcon, ReserveIcon, BoltIcon, BarChartIcon, StoreIcon } from '../../lib/icons';
 
 const MONTHLY = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-  data: [42000, 55000, 48000, 61000, 58000, 72000, 79000, 84320],
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+  data: [42000, 55000, 48000, 61000, 58000, 72000, 79000, 84320, 84320],
 };
 const WEEKLY = {
   labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -15,10 +15,12 @@ const WEEKLY = {
 };
 
 export default function Dashboard() {
-  const { reservations, ownerInventory } = useApp();
+  const { reservations, ownerInventory, setOwnerSection, openModal, setEditProduct, promotions } = useApp();
   const [period, setPeriod] = useState<'monthly' | 'weekly'>('monthly');
 
   const chartData = period === 'monthly' ? MONTHLY : WEEKLY;
+  const activePromos = promotions.filter((p) => p.active).length;
+  const totalRevenue = 84320;
 
   const kpis = [
     { icon: <RupeeIcon size={18} />, val: '₹84,320', lbl: 'REVENUE THIS MONTH', chg: '+12.4% vs last month', cls: 'purple' },
@@ -29,8 +31,40 @@ export default function Dashboard() {
 
   const lowStock = ownerInventory.filter((p) => p.stock <= 10).sort((a, b) => a.stock - b.stock);
 
+  const quickActions = [
+    { icon: '＋', label: 'Add Product', action: () => { setEditProduct(null); openModal('addProduct'); } },
+    { icon: '⚡', label: 'Scan Bill', action: () => setOwnerSection('scanner') },
+    { icon: '📦', label: 'Update Stock', action: () => setOwnerSection('inventory') },
+    { icon: '🏷️', label: 'Promotion', action: () => setOwnerSection('promotions') },
+    { icon: '📊', label: 'Analytics', action: () => setOwnerSection('analytics') },
+    { icon: '🤖', label: 'AI Assistant', action: () => setOwnerSection('assistant') },
+  ];
+
   return (
     <div className="o-section active">
+      {/* Quick Actions */}
+      <div className="quick-actions-boxy">
+        <div className="qa-label">QUICK ACTIONS</div>
+        <div className="qa-grid">
+          {quickActions.map((qa) => (
+            <button key={qa.label} className="qa-btn" onClick={qa.action}>
+              <span className="qa-icon">{qa.icon}</span>
+              <span className="qa-lbl">{qa.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Active Promo Banner */}
+      {activePromos > 0 && (
+        <div className="promo-banner-boxy" onClick={() => setOwnerSection('promotions')} style={{ cursor: 'pointer' }}>
+          <span>🏷️</span>
+          <span><strong>{activePromos} active promotion{activePromos > 1 ? 's' : ''}</strong> running — Click to manage</span>
+          <span style={{ marginLeft: 'auto', fontSize: '0.72rem', opacity: 0.7 }}>VIEW →</span>
+        </div>
+      )}
+
+      {/* KPI Row */}
       <div className="kpi-row">
         {kpis.map((k) => (
           <div className={`kpi-boxy ${k.cls}`} key={k.lbl}>
@@ -108,7 +142,7 @@ export default function Dashboard() {
           <div className="dbb-title">
             Recent Reservations <span className="count-tag">{reservations.length}</span>
           </div>
-          {reservations.map((r) => (
+          {reservations.slice(0, 5).map((r) => (
             <div className="res-item-boxy" key={r.id}>
               <div>
                 <div className="ri-name">{r.customer}</div>
@@ -122,19 +156,36 @@ export default function Dashboard() {
               </div>
             </div>
           ))}
+          <button
+            className="btn-owner-outline"
+            style={{ marginTop: 14, width: '100%', fontSize: '0.72rem' }}
+            onClick={() => setOwnerSection('analytics')}
+          >
+            VIEW ALL ORDERS →
+          </button>
         </div>
         <div className="dash-block-boxy">
           <div className="dbb-title">Low Stock Alert</div>
           {lowStock.length ? (
             lowStock.map((p) => (
               <div className="ls-item-boxy" key={p.id}>
-                <span className="lsi-prod">{p.name}</span>
+                <div>
+                  <div className="lsi-prod">{p.name}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--gray-400)', marginTop: 2 }}>{p.supplier || 'Supplier'}</div>
+                </div>
                 <span className={`lsi-stock ${p.stock <= 5 ? 'critical' : 'low'}`}>{p.stock} LEFT</span>
               </div>
             ))
           ) : (
-            <p style={{ color: 'var(--gray-500)', fontSize: '0.875rem' }}>All stock levels OK</p>
+            <p style={{ color: 'var(--gray-500)', fontSize: '0.875rem' }}>All stock levels OK ✓</p>
           )}
+          <button
+            className="btn-owner-outline"
+            style={{ marginTop: 14, width: '100%', fontSize: '0.72rem' }}
+            onClick={() => setOwnerSection('inventory')}
+          >
+            MANAGE INVENTORY →
+          </button>
         </div>
       </div>
     </div>

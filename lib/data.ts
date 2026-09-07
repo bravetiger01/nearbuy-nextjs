@@ -1,6 +1,8 @@
 import type {
   Expense,
   LedgerEntry,
+  Payment,
+  Promotion,
   Reservation,
   ScannedProduct,
   SnapProduct,
@@ -136,23 +138,23 @@ export const STORES: Store[] = [
 ];
 
 export const INITIAL_LEDGER: LedgerEntry[] = [
-  { date: '2026-08-07', desc: 'Sales — Notebooks & Pens', type: 'credit', amount: 4820, balance: 124680 },
-  { date: '2026-08-07', desc: 'Supplier payment — Paper', type: 'debit', amount: 8500, balance: 119860 },
-  { date: '2026-08-06', desc: 'Sales — Electronics & Calc', type: 'credit', amount: 3200, balance: 128360 },
-  { date: '2026-08-06', desc: 'Electricity Bill — Aug', type: 'debit', amount: 1840, balance: 125160 },
-  { date: '2026-08-05', desc: 'Bulk order — SVIT College', type: 'credit', amount: 18500, balance: 127000 },
-  { date: '2026-08-04', desc: 'Stock purchase — Notebooks', type: 'debit', amount: 12000, balance: 108500 },
-  { date: '2026-08-04', desc: 'UPI payment received', type: 'credit', amount: 6400, balance: 120500 },
-  { date: '2026-08-03', desc: 'Rent — August 2026', type: 'debit', amount: 8000, balance: 114100 },
+  { date: '2026-09-07', desc: 'Sales — Notebooks & Pens', type: 'credit', amount: 4820, balance: 124680 },
+  { date: '2026-09-07', desc: 'Supplier payment — Paper', type: 'debit', amount: 8500, balance: 119860 },
+  { date: '2026-09-06', desc: 'Sales — Electronics & Calc', type: 'credit', amount: 3200, balance: 128360 },
+  { date: '2026-09-06', desc: 'Electricity Bill — Sep', type: 'debit', amount: 1840, balance: 125160 },
+  { date: '2026-09-05', desc: 'Bulk order — SVIT College', type: 'credit', amount: 18500, balance: 127000 },
+  { date: '2026-09-04', desc: 'Stock purchase — Notebooks', type: 'debit', amount: 12000, balance: 108500 },
+  { date: '2026-09-04', desc: 'UPI payment received', type: 'credit', amount: 6400, balance: 120500 },
+  { date: '2026-09-03', desc: 'Rent — September 2026', type: 'debit', amount: 8000, balance: 114100 },
 ];
 
 export const INITIAL_EXPENSES: Expense[] = [
-  { date: '2026-08-07', name: 'Electricity Bill', category: 'Electricity', amount: 1840 },
-  { date: '2026-08-05', name: 'Store Rent (Aug)', category: 'Rent', amount: 8000 },
-  { date: '2026-08-04', name: 'Staff Salary', category: 'Staff Salary', amount: 12000 },
-  { date: '2026-08-02', name: 'Transport Charges', category: 'Transport', amount: 1200 },
-  { date: '2026-08-01', name: 'Shop Maintenance', category: 'Miscellaneous', amount: 2400 },
-  { date: '2026-07-31', name: 'Stock Purchase', category: 'Stock Purchase', amount: 7010 },
+  { date: '2026-09-07', name: 'Electricity Bill', category: 'Electricity', amount: 1840 },
+  { date: '2026-09-05', name: 'Store Rent (Sep)', category: 'Rent', amount: 8000 },
+  { date: '2026-09-04', name: 'Staff Salary', category: 'Staff Salary', amount: 12000 },
+  { date: '2026-09-02', name: 'Transport Charges', category: 'Transport', amount: 1200 },
+  { date: '2026-09-01', name: 'Shop Maintenance', category: 'Miscellaneous', amount: 2400 },
+  { date: '2026-08-31', name: 'Stock Purchase', category: 'Stock Purchase', amount: 7010 },
 ];
 
 export const INITIAL_RESERVATIONS: Reservation[] = [
@@ -160,6 +162,87 @@ export const INITIAL_RESERVATIONS: Reservation[] = [
   { id: 'R002', customer: 'Priya Shah', product: 'Classmate Notebook A4 (200 pages)', qty: 3, time: '2:00 PM', status: 'confirmed' },
   { id: 'R003', customer: 'Arjun Mehta', product: 'Geometry Box Camlin', qty: 1, time: '4:30 PM', status: 'pending' },
   { id: 'R004', customer: 'Sneha Rao', product: 'A4 Paper Ream', qty: 2, time: '6:00 PM', status: 'confirmed' },
+];
+
+export const INITIAL_PROMOTIONS: Promotion[] = [
+  {
+    id: 'P001',
+    name: 'Back to College Sale',
+    products: ['Classmate Notebook A4 (200 pages)', 'Reynolds Pen Blue (Pack of 10)'],
+    discountPct: 15,
+    startDate: '2026-09-01',
+    endDate: '2026-09-30',
+    active: true,
+  },
+  {
+    id: 'P002',
+    name: 'Calculator Bundle Offer',
+    products: ['Scientific Calculator Casio fx-82MS', 'Geometry Box Camlin'],
+    discountPct: 10,
+    startDate: '2026-09-05',
+    endDate: '2026-09-20',
+    active: true,
+  },
+  {
+    id: 'P003',
+    name: 'Paper & Office Clearance',
+    products: ['A4 Paper Ream (500 sheets)', 'Stapler + Pins Set'],
+    discountPct: 20,
+    startDate: '2026-09-10',
+    endDate: '2026-09-15',
+    active: false,
+  },
+];
+
+export const INITIAL_PAYMENTS: Payment[] = [
+  { id: 'TXN-2026-0091', orderId: 'R001', customer: 'Rahul Patel', amount: 850, method: 'upi', date: '2026-09-07', status: 'paid' },
+  { id: 'TXN-2026-0090', orderId: 'R002', customer: 'Priya Shah', amount: 360, method: 'cash', date: '2026-09-07', status: 'paid' },
+  { id: 'TXN-2026-0089', orderId: 'WALK-IN', customer: 'Walk-in Customer', amount: 520, method: 'upi', date: '2026-09-07', status: 'paid' },
+  { id: 'TXN-2026-0088', orderId: 'WALK-IN', customer: 'Walk-in Customer', amount: 1200, method: 'card', date: '2026-09-06', status: 'paid' },
+  { id: 'TXN-2026-0087', orderId: 'R003', customer: 'Arjun Mehta', amount: 180, method: 'cash', date: '2026-09-06', status: 'pending' },
+  { id: 'TXN-2026-0086', orderId: 'ONLINE-012', customer: 'Online Order', amount: 2800, method: 'online', date: '2026-09-05', status: 'paid' },
+  { id: 'TXN-2026-0085', orderId: 'R004', customer: 'Sneha Rao', amount: 700, method: 'upi', date: '2026-09-05', status: 'paid' },
+  { id: 'TXN-2026-0084', orderId: 'WALK-IN', customer: 'Walk-in Customer', amount: 95, method: 'cash', date: '2026-09-04', status: 'paid' },
+  { id: 'TXN-2026-0083', orderId: 'ONLINE-011', customer: 'Online Order', amount: 3400, method: 'online', date: '2026-09-04', status: 'failed' },
+  { id: 'TXN-2026-0082', orderId: 'WALK-IN', customer: 'Walk-in Customer', amount: 450, method: 'card', date: '2026-09-03', status: 'paid' },
+];
+
+// Analytics data per period
+export const ANALYTICS_DATA = {
+  today: {
+    labels: ['9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM'],
+    revenue: [820, 1240, 980, 650, 400, 1100, 1480, 920, 740, 1860, 1130],
+    orders: [4, 7, 5, 3, 2, 6, 8, 4, 4, 9, 6],
+  },
+  week: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    revenue: [8200, 12400, 9800, 11200, 14500, 18000, 10200],
+    orders: [32, 48, 41, 44, 58, 72, 39],
+  },
+  month: {
+    labels: ['W1', 'W2', 'W3', 'W4'],
+    revenue: [18400, 22800, 21600, 21520],
+    orders: [142, 168, 155, 159],
+  },
+  quarter: {
+    labels: ['Jul', 'Aug', 'Sep'],
+    revenue: [72000, 84320, 84320],
+    orders: [512, 624, 624],
+  },
+};
+
+export const BEST_SELLERS = [
+  { name: 'Classmate Notebook A4 (200 pages)', sold: 340, revenue: 40800, category: 'Notebooks' },
+  { name: 'Reynolds Pen Blue (Pack of 10)', sold: 210, revenue: 17850, category: 'Pens' },
+  { name: 'Scientific Calculator Casio fx-82MS', sold: 42, revenue: 35700, category: 'Electronics' },
+  { name: 'Geometry Box Camlin', sold: 98, revenue: 17640, category: 'Math' },
+  { name: 'A4 Paper Ream (500 sheets)', sold: 75, revenue: 26250, category: 'Paper' },
+];
+
+export const SLOW_MOVERS = [
+  { name: 'Graph Paper Book', sold: 12, revenue: 480, category: 'Paper' },
+  { name: 'Stapler + Pins Set', sold: 8, revenue: 1160, category: 'Office' },
+  { name: 'Highlighter Set (5 colours)', sold: 14, revenue: 1330, category: 'Pens' },
 ];
 
 export const AI_RECS: Record<string, string[]> = {
@@ -191,7 +274,31 @@ export const SCANNED_BILL_PRODUCTS: ScannedProduct[] = [
 ];
 
 export function createOwnerInventory(): StoreProduct[] {
-  return STORES[0].products.map((p, i) => ({ ...p, id: i, listed: true }));
+  const raw = STORES[0].products;
+  const skus = ['STN-NB-001', 'STN-PN-002', 'STN-MT-003', 'STN-EL-004', 'STN-PP-005', 'STN-OF-006', 'STN-PN-007', 'STN-PP-008'];
+  const costs = [80, 55, 120, 600, 240, 95, 65, 25];
+  const suppliers = ['Classmate Corp', 'Reynolds India', 'Camlin Ltd', 'Casio India', 'JK Paper', 'Kangaro', 'Faber-Castell', 'Navneet'];
+  const thresholds = [20, 15, 8, 3, 10, 5, 10, 10];
+  const descs = [
+    'Premium ruled notebook, hard cover, 200 pages',
+    'Smooth flow ballpen, Pack of 10',
+    'Complete geometry set with compass',
+    'Scientific calculator, 240 functions',
+    'JK Copier 75 GSM, 500 sheets',
+    'Metal stapler with 1000 pins',
+    'Vibrant highlighters, 5 colours',
+    '1cm grid paper, 32 pages',
+  ];
+  return raw.map((p, i) => ({
+    ...p,
+    id: i,
+    listed: true,
+    sku: skus[i] || `STN-00${i}`,
+    costPrice: costs[i] || Math.round(p.price * 0.65),
+    minThreshold: thresholds[i] || 10,
+    supplier: suppliers[i] || 'Supplier',
+    description: descs[i] || '',
+  }));
 }
 
 export const FASHION_STORES = [
