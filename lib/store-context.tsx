@@ -262,6 +262,8 @@ interface AppContextValue {
   setLoggedIn: (v: boolean) => void;
   isOwner: boolean;
   ownerLogout: () => void;
+  isRider: boolean;
+  riderLogout: () => void;
   ownerShopId: string | null;
   inventoryLoading: boolean;
 
@@ -347,6 +349,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isRider, setIsRider] = useState(false);
 
   // ─── Owner inventory state (must be declared before auth useEffect) ──────────
   const [ownerShopId, setOwnerShopId] = useState<string | null>(null);
@@ -1040,6 +1043,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (isShopOwner) setMode('owner');
   }, []);
 
+  const riderLogout = useCallback(() => {
+    setIsRider(false);
+    setLoggedIn(false);
+    setMode('customer');
+  }, []);
+
   const openProductModal = useCallback((storeId: number) => {
     setProductStoreId(storeId);
     setActiveModal('product');
@@ -1092,6 +1101,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMode(m);
     if (m === 'owner') {
       setIsOwner(true);
+      setIsRider(false);
+    } else if (m === 'rider') {
+      setIsRider(true);
+      setIsOwner(false);
     }
   }, []);
 
@@ -1131,6 +1144,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLoggedIn: handleSetLoggedIn,
       isOwner,
       ownerLogout,
+      isRider,
+      riderLogout,
       loginDemo,
       ownerShopId,
       inventoryLoading,
@@ -1209,6 +1224,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       handleSetLoggedIn,
       isOwner,
       ownerLogout,
+      isRider,
+      riderLogout,
       loginDemo,
       ownerShopId,
       inventoryLoading,

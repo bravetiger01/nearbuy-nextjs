@@ -16,11 +16,16 @@ import ProductModal from '../components/modals/ProductModal';
 import AddProductModal from '../components/modals/AddProductModal';
 import AddTxnModal from '../components/modals/AddTxnModal';
 import AddExpModal from '../components/modals/AddExpModal';
+
+import RiderView from '../components/rider/RiderView';
 import SplashScreen from '../components/SplashScreen';
 
 function CurrentView() {
   const { mode } = useApp();
-  return mode === 'customer' ? <CustomerView /> : <OwnerView />;
+  if (mode === 'customer') return <CustomerView />;
+  if (mode === 'owner') return <OwnerView />;
+  if (mode === 'rider') return <RiderView />;
+  return null;
 }
 
 function ModalHosts() {
@@ -73,4 +78,4 @@ export default function App() {
       )}
     </>
   );
-}
+}
