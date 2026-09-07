@@ -2,22 +2,15 @@
 
 import { useApp } from '../../lib/store-context';
 import { BellIcon, MenuIcon, StoreIcon } from '../../lib/icons';
-import { BellIcon, MenuIcon, StoreIcon } from '../../lib/icons';
 
 export default function OwnerTopbar() {
-  const { toggleSidebar, showToast, ownerSection, ownerLogout } = useApp();
   const { toggleSidebar, showToast, ownerSection, ownerLogout, switchMode } = useApp();
   const titles: Record<string, string> = {
     dashboard: 'Dashboard',
     listings: 'My Listings',
     storefront: 'Storefront Preview',
-    storefront: 'Storefront Preview',
     inventory: 'Stock Manager',
     scanner: 'AI Bill Scanner',
-    analytics: 'Sales Analytics',
-    promotions: 'Promotions',
-    payments: 'Payments & Reconciliation',
-    assistant: 'AI Business Assistant',
     analytics: 'Sales Analytics',
     promotions: 'Promotions',
     payments: 'Payments & Reconciliation',
