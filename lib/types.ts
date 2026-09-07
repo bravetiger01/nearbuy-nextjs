@@ -111,6 +111,18 @@ export interface ChatMessage {
   ts: number;
 }
 
-export type Mode = 'customer' | 'owner';
+export type Mode = 'customer' | 'owner' | 'rider';
 
 export type ToastType = 'success' | 'error' | 'info';
+
+export interface DeliveryJob {
+  id: string;
+  shopName: string;
+  shopAddress: string;
+  customerAddress: string;
+  distanceKm: number;
+  fee: number;
+  status: 'available' | 'accepted' | 'picked_up' | 'delivered';
+  shopCoords?: [number, number];
+  customerCoords?: [number, number];
+}

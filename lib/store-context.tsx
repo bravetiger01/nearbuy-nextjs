@@ -98,6 +98,8 @@ interface AppContextValue {
   setLoggedIn: (v: boolean) => void;
   isOwner: boolean;
   ownerLogout: () => void;
+  isRider: boolean;
+  riderLogout: () => void;
 
   ownerInventory: StoreProduct[];
   toggleListing: (idx: number) => void;
@@ -164,6 +166,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState('en-US');
   const [loggedIn, setLoggedIn] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isRider, setIsRider] = useState(false);
 
   const [ownerInventory, setOwnerInventory] = useState<StoreProduct[]>(() => createOwnerInventory());
   const [editProduct, setEditProduct] = useState<StoreProduct | null>(null);
@@ -332,6 +335,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOwnerSection('dashboard');
   }, []);
 
+  const riderLogout = useCallback(() => {
+    setIsRider(false);
+    setLoggedIn(false);
+    setMode('customer');
+  }, []);
+
   const openProductModal = useCallback((storeId: number) => {
     setProductStoreId(storeId);
     setActiveModal('product');
@@ -384,6 +393,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMode(m);
     if (m === 'owner') {
       setIsOwner(true);
+      setIsRider(false);
+    } else if (m === 'rider') {
+      setIsRider(true);
+      setIsOwner(false);
     }
   }, []);
 
@@ -419,6 +432,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLoggedIn: handleSetLoggedIn,
       isOwner,
       ownerLogout,
+      isRider,
+      riderLogout,
       ownerInventory,
       toggleListing,
       saveProduct,
@@ -480,6 +495,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       handleSetLoggedIn,
       isOwner,
       ownerLogout,
+      isRider,
+      riderLogout,
       ownerInventory,
       toggleListing,
       saveProduct,

@@ -64,7 +64,7 @@ export default function CustomerNav() {
             )}
           </div>
 
-          {/* Shop Owner Login Button */}
+          {/* Shop Owner / Rider Login Buttons */}
           {isOwner ? (
             <button
               className="user-chip"
@@ -75,14 +75,24 @@ export default function CustomerNav() {
               DASHBOARD
             </button>
           ) : (
-            <button
-              className="user-chip"
-              style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
-              onClick={() => openModal('login')}
-            >
-              <StoreIcon size={13} />
-              SHOP OWNER LOGIN
-            </button>
+            <>
+              <button
+                className="user-chip"
+                style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => openModal('login')}
+              >
+                <StoreIcon size={13} />
+                SHOP OWNER
+              </button>
+              <button
+                className="user-chip"
+                style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => switchMode('rider')}
+              >
+                <StoreIcon size={13} />
+                RIDER LOGIN
+              </button>
+            </>
           )}
 
           <div
