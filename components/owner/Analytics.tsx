@@ -93,9 +93,10 @@ export default function Analytics() {
 
   return (
     <div className="o-section active">
-      <div className="o-header-row">
-        <h2 className="o-title">Sales Analytics</h2>
-        <div className="time-tabs">
+      <div className="o-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 className="o-title" style={{ marginBottom: 0 }}>Sales Analytics</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="time-tabs">
           {[
             { id: 'today', label: 'Today' },
             { id: 'week', label: '7 Days' },
@@ -110,6 +111,10 @@ export default function Analytics() {
               {t.label}
             </button>
           ))}
+          </div>
+          <button className="btn-owner-outline print-include" onClick={() => window.print()} style={{ height: 34, padding: '0 16px' }}>
+            EXPORT PDF
+          </button>
         </div>
       </div>
 

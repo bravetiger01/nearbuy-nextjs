@@ -991,6 +991,8 @@ img { display: block; max-width: 100%; }
 }
 @keyframes laserScan { 0%{top:0;opacity:1} 50%{top:100%;opacity:1} 100%{top:0;opacity:1} }
 .scan-status-txt { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.08em; color: var(--gray-500); }
+.scan-progress { height: 4px; background: var(--gray-200); margin: 14px auto 4px; overflow: hidden; width: 220px; }
+.scan-progress-fill { height: 100%; background: var(--lav-500); transition: width 0.25s ease; }
 .scan-results { margin-top: 16px; }
 .scan-ok-bar { background: var(--lav-100); border: 1px solid var(--lav-300); color: var(--lav-700); font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.06em; padding: 12px 16px; margin-bottom: 12px; border-left: 3px solid var(--lav-500); }
 .scanned-item { display: flex; align-items: center; background: var(--white); border: var(--brd); padding: 10px 14px; margin-bottom: 6px; font-size: 0.875rem; }
@@ -2536,3 +2538,19 @@ body { min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
 [data-theme="dark"] .hero-pill:hover { background: var(--lav-500); }
 [data-theme="dark"] .sc-prod-img-wrap { background: #1a1a1a; border-color: var(--gray-200); }
 [data-theme="dark"] .sc-prod-img-fallback { background: var(--lav-100); }
+
+/* ══════════════════════════════════════════════════════
+   PRINT MODE (PDF EXPORT)
+   ══════════════════════════════════════════════════════ */
+@media print {
+  body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sidebar-boxy, .owner-topbar-boxy, .mode-switcher-wrap, .toast-container, button:not(.print-include) { display: none !important; }
+  .owner-view-boxy { display: block !important; min-height: auto !important; background: white !important; }
+  .owner-main-boxy { margin: 0 !important; padding: 0 !important; margin-left: 0 !important; width: 100% !important; background: white !important; border: none !important; }
+  .o-section { padding: 0 !important; box-shadow: none !important; border: none !important; }
+  .chart-card-boxy, .kpi-boxy, .pnl-kpi-boxy, .dash-block-boxy { box-shadow: none !important; border: 1px solid #ddd !important; break-inside: avoid; }
+  .doc-boxy { border: none !important; padding: 0 !important; }
+  .table-scroll { overflow: visible !important; }
+  .doc-table-boxy th, .doc-table-boxy td { border-color: #000 !important; }
+  .doc-table-boxy input { border: none !important; padding: 0 !important; background: transparent !important; }
+}

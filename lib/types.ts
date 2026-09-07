@@ -85,8 +85,14 @@ export interface SnapProduct {
 export interface ScannedProduct {
   name: string;
   qty: number;
+  /** Purchase rate / cost price (from the bill) */
   unitPrice: number;
+  /** Selling price the owner sets (defaults to a margin above unitPrice) */
+  sellingPrice: number;
   category: string;
+  hsn: string;
+  /** Whether this item is included in the import */
+  include: boolean;
 }
 
 export interface RiderContext {

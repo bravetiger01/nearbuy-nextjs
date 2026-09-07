@@ -4,6 +4,9 @@
 -- Seeds orders, order_items, payments, transactions, expenses,
 -- reservations, reservation_items and shop_views so the
 -- dashboard / analytics / P&L show real numbers.
+-- Sections 1-8 seed one demo shop's recent activity; Section 9
+-- generates ~6 months of additional orders/expenses so charts
+-- and the P&L report have a proper trend.
 --
 -- Uses relative dates (NOW() - INTERVAL ...) so the data is
 -- always "fresh" no matter when it is run.
@@ -201,3 +204,140 @@ SELECT
   NOW() - (random() * 90 || ' days')::interval
 FROM generate_series(1, 300)
 ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- 9. EXTENDED ORDER / EXPENSE DATA (for charts & P&L)
+-- ------------------------------------------------------------
+-- Generates 44 more orders (50000000-...000012 .. 000055) spread
+-- over the last ~5 months, with matching order_items, payments,
+-- ledger transactions, plus 45 more expenses across 6 months.
+-- 100% idempotent: ids are deterministic, ON CONFLICT skips rows
+-- already inserted. The 11 original orders remain untouched.
+-- ============================================================
+
+-- ─── 9a. Generate order items into a temp table (single source of truth) ────
+-- order_items references orders (FK), so orders must be inserted first.
+-- Generating into a temp table lets the orders INSERT compute totals from
+-- the very same item rows that are later inserted as order_items.
+DROP TABLE IF EXISTS _gen_items;
+CREATE TEMP TABLE _gen_items AS
+SELECT
+  gs AS n,
+  ('60000000-0000-0000-0000-' || lpad((gs * 10 + item_idx)::text, 12, '0'))::uuid AS item_id,
+  ('50000000-0000-0000-0000-' || lpad(gs::text, 12, '0'))::uuid AS order_id,
+  NOW() - (GREATEST(0.3, (55 - gs) * 3.5 + random() * 2.0) || ' days')::interval AS created_at,
+  p.shop_product_id,
+  p.product_name,
+  p.unit_price,
+  1 + floor(random() * 3)::int AS qty
+FROM generate_series(12, 55) AS gs
+CROSS JOIN LATERAL generate_series(1, 1 + floor(random() * 3)::int) AS item_idx
+CROSS JOIN LATERAL (
+  SELECT v.pid AS shop_product_id, v.pname AS product_name, v.pprice AS unit_price
+  FROM (VALUES
+    ('40000000-0000-0000-0000-000000000001'::uuid, 'Classmate Notebook A4 (200 pages)', 120),
+    ('40000000-0000-0000-0000-000000000002'::uuid, 'Reynolds Pen Blue (Pack of 10)', 85),
+    ('40000000-0000-0000-0000-000000000003'::uuid, 'Geometry Box Camlin', 180),
+    ('40000000-0000-0000-0000-000000000004'::uuid, 'Scientific Calculator Casio fx-82MS', 850),
+    ('40000000-0000-0000-0000-000000000005'::uuid, 'A4 Paper Ream (500 sheets)', 350),
+    ('40000000-0000-0000-0000-000000000006'::uuid, 'Stapler + Pins Set', 145),
+    ('40000000-0000-0000-0000-000000000007'::uuid, 'Highlighter Set (5 colours)', 95),
+    ('40000000-0000-0000-0000-000000000008'::uuid, 'Graph Paper Book', 40)
+  ) AS v(pid, pname, pprice)
+  ORDER BY random()
+  LIMIT 1
+) p;
+
+-- ─── 9b. ORDERS first (totals computed from _gen_items) ──────────────────────
+WITH totals AS (
+  SELECT n, order_id, MAX(created_at) AS created_at, SUM(qty * unit_price) AS subtotal
+  FROM _gen_items
+  GROUP BY n, order_id
+),
+meta AS (
+  SELECT
+    gs AS n,
+    (ARRAY['delivered','delivered','delivered','delivered','delivered','delivered',
+           'confirmed','confirmed','preparing','ready_for_pickup','pending','picked_up'])[1 + floor(random() * 12)::int] AS status
+  FROM generate_series(12, 55) AS gs
+)
+INSERT INTO public.orders
+  (id, customer_id, shop_id, status, subtotal, delivery_fee, platform_fee, discount, total_amount, payment_status, notes, created_at, updated_at)
+SELECT
+  t.order_id,
+  'a0000000-0000-0000-0000-000000000002',
+  '10000000-0000-0000-0000-000000000001',
+  m.status::order_status,
+  t.subtotal,
+  0, 0, 0,
+  t.subtotal,
+  CASE WHEN m.status = 'pending' THEN 'pending'::payment_status ELSE 'paid'::payment_status END,
+  NULL,
+  t.created_at,
+  t.created_at
+FROM totals t
+JOIN meta m ON m.n = t.n
+ON CONFLICT (id) DO NOTHING;
+
+-- ─── 9b2. ORDER ITEMS (now that the parent orders exist) ─────────────────────
+INSERT INTO public.order_items (id, order_id, shop_product_id, product_name, quantity, unit_price, subtotal, created_at)
+SELECT
+  item_id, order_id, shop_product_id, product_name, qty, unit_price, (qty * unit_price)::numeric, created_at
+FROM _gen_items
+ON CONFLICT (id) DO NOTHING;
+
+-- ─── 9c. PAYMENTS (one per new order; pending for pending orders) ────────────
+INSERT INTO public.payments (id, order_id, customer_id, amount, payment_method, payment_gateway, transaction_id, status, paid_at, created_at)
+SELECT
+  ('70000000-0000-0000-0000-' || right(o.id::text, 12))::uuid,
+  o.id,
+  'a0000000-0000-0000-0000-000000000002',
+  o.total_amount,
+  ((ARRAY['upi','cash','upi','cash','upi','card','online'])[1 + floor(random() * 7)::int])::payment_method,
+  NULL,
+  CASE WHEN o.payment_status = 'paid' THEN 'ORD-' || right(o.id::text, 6) ELSE NULL END,
+  o.payment_status,
+  CASE WHEN o.payment_status = 'paid' THEN o.created_at ELSE NULL END,
+  o.created_at
+FROM public.orders o
+WHERE o.id > '50000000-0000-0000-0000-000000000011'::uuid
+  AND o.id::text LIKE '50000000-0000-0000-0000-%'
+ON CONFLICT (id) DO NOTHING;
+
+-- ─── 9d. LEDGER TRANSACTIONS (sale credit for every paid order) ─────────────
+INSERT INTO public.transactions (id, shop_id, order_id, transaction_type, amount, payment_method, reference_id, description, transaction_date, created_at)
+SELECT
+  ('80000000-0000-0000-0000-' || right(o.id::text, 12))::uuid,
+  '10000000-0000-0000-0000-000000000001',
+  o.id,
+  'sale',
+  o.total_amount,
+  p.payment_method,
+  NULL,
+  COALESCE('Sale — ' || (SELECT product_name FROM public.order_items oi WHERE oi.order_id = o.id ORDER BY oi.created_at LIMIT 1), 'Order sale'),
+  o.created_at,
+  o.created_at
+FROM public.orders o
+JOIN public.payments p ON p.order_id = o.id
+WHERE o.payment_status = 'paid'
+  AND o.id > '50000000-0000-0000-0000-000000000011'::uuid
+ON CONFLICT (id) DO NOTHING;
+
+-- ─── 9e. EXTRA EXPENSES (45 more rows, ~6 months of history) ─────────────────
+WITH exp AS (
+  SELECT
+    gs AS n,
+    (ARRAY['Rent','Electricity','Staff Salary','Transport','Packaging','Internet','Miscellaneous'])[1 + floor(random() * 7)::int] AS category,
+    (ARRAY['Shop rent','Electricity bill','Helper salary','Delivery bike fuel','Wrapping material','Broadband','Shop supplies'])[1 + floor(random() * 7)::int] AS description,
+    (ARRAY[20000,4300,8000,2200,1800,1000,650])[1 + floor(random() * 7)::int] AS amount,
+    (ARRAY['cash','upi'])[1 + floor(random() * 2)::int]::payment_method AS payment_method,
+    NOW() - ((gs * 3.4) || ' days')::interval AS created_at
+  FROM generate_series(1, 45) AS gs
+)
+INSERT INTO public.expenses (id, shop_id, category, description, amount, expense_date, payment_method, receipt_url, created_at)
+SELECT
+  ('90000000-0000-0000-0000-' || lpad((50 + n)::text, 12, '0'))::uuid,
+  '10000000-0000-0000-0000-000000000001',
+  category, description, amount, created_at::date, payment_method, NULL, created_at
+FROM exp
+ON CONFLICT (id) DO NOTHING;

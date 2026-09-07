@@ -70,7 +70,12 @@ export default function PnL() {
 
   return (
     <div className="o-section active">
-      <h2 className="o-title">Profit & Loss Report</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h2 className="o-title" style={{ marginBottom: 0 }}>Profit & Loss Report</h2>
+        <button className="btn-owner-outline" onClick={() => window.print()}>
+          EXPORT TO PDF
+        </button>
+      </div>
       <div className="pnl-kpi-row">
         {kpis.map((k) => (
           <div className={`pnl-kpi-boxy ${k.cls}`} key={k.lbl}>

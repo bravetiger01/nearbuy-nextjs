@@ -129,12 +129,12 @@ function DocEditable({
           SAVE
         </button>
         {id === 'invoice' && (
-          <button className="btn-owner-outline" onClick={() => showToast('Opening print…', 'info')}>
+          <button className="btn-owner-outline" onClick={() => window.print()}>
             PRINT
           </button>
         )}
         {id === 'proforma' && (
-          <button className="btn-owner-outline" onClick={() => showToast('Opening print…', 'info')}>
+          <button className="btn-owner-outline" onClick={() => window.print()}>
             PRINT
           </button>
         )}
