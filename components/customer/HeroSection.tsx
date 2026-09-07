@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
 import { GlobeIcon, MicIcon, CameraIcon, SearchIcon, PinIcon } from '../../lib/icons';
 
-const QUICK_TAGS = ['Notebook', 'Pen', 'Calculator', 'A4 Paper', 'Geometry Box'];
+const QUICK_TAGS = ['Notebook', 'Chopdi (Notebook)', 'Pen', 'Calculator', 'Dawai (Medicine)'];
 
 export default function HeroSection() {
   const { searchTerm, handleSearchInput, doSearch, quickSearch, suggestions, openModal, lang, setLang } = useApp();

@@ -11,7 +11,7 @@ const CATS = ['all', 'Notebooks', 'Pens', 'Math', 'Electronics', 'Paper', 'Offic
 const STOCK_FILTERS = ['all', 'in-stock', 'low-stock', 'out-of-stock'];
 
 export default function Inventory() {
-  const { ownerInventory, toggleListing, deleteProduct, openModal, setEditProduct, updateStock, showToast } = useApp();
+  const { ownerInventory, toggleListing, deleteProduct, openModal, setEditProduct, updateStock, showToast, inventoryLoading } = useApp();
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('all');
   const [stockFilter, setStockFilter] = useState('all');
