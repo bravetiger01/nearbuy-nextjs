@@ -1,16 +1,42 @@
 'use client';
 
 import { useApp } from '../../lib/store-context';
-import { LogoMark, BarChartIcon, StoreIcon, BoxIcon, BoltIcon, FileIcon, ChessKnightIcon, BankIcon, RupeeIcon, TrendUpIcon, CardIcon, GearIcon } from '../../lib/icons';
+import {
+  LogoMark,
+  BarChartIcon,
+  StoreIcon,
+  BoxIcon,
+  BoltIcon,
+  FileIcon,
+  ChessKnightIcon,
+  BankIcon,
+  RupeeIcon,
+  TrendUpIcon,
+  CardIcon,
+  GearIcon,
+  EyeIcon,
+  ReserveIcon,
+  UserIcon,
+  BellIcon,
+} from '../../lib/icons';
 
 const SECTIONS = [
   { cat: 'OVERVIEW', items: [
     { id: 'dashboard', label: 'Dashboard', icon: <BarChartIcon size={15} /> },
     { id: 'listings', label: 'My Listings', icon: <StoreIcon size={15} /> },
+    { id: 'storefront', label: 'Storefront', icon: <EyeIcon size={15} /> },
   ]},
   { cat: 'INVENTORY', items: [
     { id: 'inventory', label: 'Stock Manager', icon: <BoxIcon size={15} /> },
     { id: 'scanner', label: 'AI Bill Scanner', icon: <BoltIcon size={15} /> },
+  ]},
+  { cat: 'SALES', items: [
+    { id: 'analytics', label: 'Analytics', icon: <BarChartIcon size={15} /> },
+    { id: 'promotions', label: 'Promotions', icon: <ReserveIcon size={15} /> },
+    { id: 'payments', label: 'Payments', icon: <CardIcon size={15} /> },
+  ]},
+  { cat: 'AI', items: [
+    { id: 'assistant', label: 'AI Assistant', icon: <BellIcon size={15} /> },
   ]},
   { cat: 'DOCUMENTS', items: [
     { id: 'invoice', label: 'Purchase Invoice', icon: <FileIcon size={15} /> },
@@ -29,7 +55,7 @@ const SECTIONS = [
 ];
 
 export default function OwnerSidebar() {
-  const { ownerSection, setOwnerSection, sidebarCollapsed, toggleSidebar, mobileSidebarOpen, closeMobileSidebar } = useApp();
+  const { ownerSection, setOwnerSection, sidebarCollapsed, toggleSidebar, mobileSidebarOpen, closeMobileSidebar, ownerLogout } = useApp();
 
   return (
     <aside className={`sidebar-boxy ${sidebarCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'open' : ''}`}>
@@ -67,11 +93,30 @@ export default function OwnerSidebar() {
               >
                 {item.icon}
                 <span>{item.label}</span>
+                {item.id === 'assistant' && (
+                  <span style={{ marginLeft: 'auto', fontSize: '0.58rem', fontWeight: 800, background: 'var(--lav-500)', color: '#fff', padding: '1px 6px', letterSpacing: '0.06em' }}>AI</span>
+                )}
               </a>
             ))}
           </div>
         ))}
       </nav>
+      <div style={{ borderTop: 'var(--brd)', padding: '10px 12px' }}>
+        <button
+          onClick={ownerLogout}
+          style={{
+            width: '100%', padding: '8px 12px', background: 'transparent',
+            border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: '0.8rem', fontWeight: 700, color: 'var(--gray-500)',
+            cursor: 'pointer', transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#B91C1C'; e.currentTarget.style.borderColor = '#FECACA'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--gray-500)'; e.currentTarget.style.borderColor = 'var(--black)'; }}
+        >
+          <UserIcon size={14} />
+          {!sidebarCollapsed && <span>LOGOUT</span>}
+        </button>
+      </div>
       <button className="sb-collapse" onClick={toggleSidebar}>
         ‹
       </button>
