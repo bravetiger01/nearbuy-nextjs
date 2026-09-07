@@ -27,6 +27,7 @@ export default function AddProductModal() {
     if (!n) { showToast('Enter product name', 'error'); return; }
     saveProduct({
       id: ep?.id,
+      supabaseId: ep?.supabaseId,
       name: n,
       stock: s,
       price: p,

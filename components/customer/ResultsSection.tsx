@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useApp, type SortBy } from '../../lib/store-context';
+import { LANG_KEYWORDS } from '../../lib/data';
 import StoreCard from './StoreCard';
 import StorePreview from './StorePreview';
 import { BoltIcon, ListIcon, MapIcon, SearchIcon } from '../../lib/icons';
@@ -32,6 +33,11 @@ export default function ResultsSection() {
             <div className="rh-left">
               <h2 className="rh-title">&quot;{currentQuery}&quot;</h2>
               <div className="rh-sub">
+                {LANG_KEYWORDS[currentQuery.toLowerCase()] && (
+                  <span className="text-emerald-600 font-medium mr-2">
+                    🌐 Detected local term. Showing results for &apos;{LANG_KEYWORDS[currentQuery.toLowerCase()]}&apos;.
+                  </span>
+                )}
                 {noResults
                   ? 'No stores found near SVIT Vasad'
                   : `${currentResults.length} store${currentResults.length > 1 ? 's' : ''} found · within 2 km of SVIT Vasad`}

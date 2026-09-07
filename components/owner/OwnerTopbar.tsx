@@ -5,6 +5,7 @@ import { BellIcon, MenuIcon, StoreIcon } from '../../lib/icons';
 
 export default function OwnerTopbar() {
   const { toggleSidebar, showToast, ownerSection, ownerLogout, switchMode } = useApp();
+
   const titles: Record<string, string> = {
     dashboard: 'Dashboard',
     listings: 'My Listings',
@@ -24,6 +25,7 @@ export default function OwnerTopbar() {
     bank: 'Bank Details',
     settings: 'Store Settings',
   };
+
   return (
     <div className="owner-topbar-boxy">
       <button className="topbar-menu" onClick={toggleSidebar}>

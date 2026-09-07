@@ -4,6 +4,7 @@ import type { MouseEvent } from 'react';
 import type { StoreResult } from '../../lib/types';
 import { useApp } from '../../lib/store-context';
 import { BoxIcon, ClockIcon, PinIcon } from '../../lib/icons';
+import Image from 'next/image';
 
 export default function StoreCard({ store }: { store: StoreResult }) {
   const { openProductModal, setRiderCtx, setReserveCtx, openModal } = useApp();
@@ -32,19 +33,25 @@ export default function StoreCard({ store }: { store: StoreResult }) {
 
   return (
     <div className="store-card-boxy" onClick={() => openProductModal(store.id)}>
+      {/* Color accent bar */}
       <div className="sc-top-bar" style={{ background: store.color }} />
+
       <div className="sc-body">
+        {/* Store header */}
         <div className="sc-head">
           <div>
             <div className="sc-name">{store.name}</div>
             <div className="sc-cat">{store.category}</div>
           </div>
           <div className="sc-badges">
-            <span className={`sc-open ${store.openNow ? 'open' : 'closed'}`}>{store.openNow ? '● OPEN' : '● CLOSED'}</span>
+            <span className={`sc-open ${store.openNow ? 'open' : 'closed'}`}>
+              {store.openNow ? '● OPEN' : '● CLOSED'}
+            </span>
             <span className="sc-rating">★ {store.rating}</span>
           </div>
         </div>
 
+        {/* Info chips */}
         <div className="sc-chips">
           <div className="sc-chip dist">
             <PinIcon size={12} />
@@ -60,13 +67,36 @@ export default function StoreCard({ store }: { store: StoreResult }) {
           </div>
         </div>
 
+        {/* Products — with image + selling price badge */}
         <div className="sc-products">
           <div className="sc-prod-label">MATCHING PRODUCTS</div>
           {shown.map((p) => (
             <div className="sc-prod-item" key={p.name}>
+              {/* Product image or category fallback */}
+              {p.image ? (
+                <div className="sc-prod-img-wrap">
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    width={36}
+                    height={36}
+                    style={{ objectFit: 'contain', width: '100%', height: '100%' }}
+                  />
+                </div>
+              ) : (
+                <div className="sc-prod-img-fallback">
+                  {p.category?.slice(0, 3).toUpperCase() || 'PRD'}
+                </div>
+              )}
+
+              {/* Name */}
               <span className="sc-prod-name">{p.name}</span>
-              <span className="sc-prod-stock">{p.stock} in stock</span>
-              <span className="sc-prod-price">₹{p.price}</span>
+
+              {/* Stock + Price */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                <span className="sc-stock-badge">{p.stock} left</span>
+                <span className="sc-price-badge">₹{p.price}</span>
+              </div>
             </div>
           ))}
           {store.matchedProducts.length > 3 && (
@@ -78,6 +108,7 @@ export default function StoreCard({ store }: { store: StoreResult }) {
 
         <div className="sc-updated">UPDATED {store.lastUpdated.toUpperCase()}</div>
 
+        {/* Action buttons */}
         <div className="sc-actions">
           <button className="sc-act-btn" onClick={doView}>
             VIEW ALL

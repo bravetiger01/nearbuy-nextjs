@@ -3,6 +3,7 @@ export interface Product {
   stock: number;
   price: number;
   category: string;
+  image?: string;
 }
 
 export interface StoreProduct extends Product {
@@ -14,6 +15,10 @@ export interface StoreProduct extends Product {
   supplier?: string;
   description?: string;
   image?: string;
+  /** UUID of the shop_products row in Supabase */
+  supabaseId?: string;
+  /** UUID of the shop row in Supabase */
+  shopId?: string;
 }
 
 export interface Store {
@@ -31,6 +36,10 @@ export interface Store {
   hours: string;
   color: string;
   products: Product[];
+  /** Full address string for display */
+  address?: string;
+  /** UUID of the shops row in Supabase (used to scope owner operations) */
+  shopDbId?: string;
 }
 
 export interface StoreResult extends Store {
@@ -38,6 +47,7 @@ export interface StoreResult extends Store {
 }
 
 export interface LedgerEntry {
+  supabaseId?: string;
   date: string;
   desc: string;
   type: 'credit' | 'debit';
@@ -46,6 +56,7 @@ export interface LedgerEntry {
 }
 
 export interface Expense {
+  supabaseId?: string;
   date: string;
   name: string;
   category: string;
@@ -54,11 +65,12 @@ export interface Expense {
 
 export interface Reservation {
   id: string;
+  supabaseId?: string;
   customer: string;
   product: string;
   qty: number;
   time: string;
-  status: 'pending' | 'confirmed';
+  status: 'pending' | 'confirmed' | 'ready' | 'picked_up' | 'cancelled' | 'expired';
 }
 
 export interface SnapProduct {
@@ -85,6 +97,7 @@ export interface RiderContext {
 }
 
 export interface Promotion {
+  supabaseId?: string;
   id: string;
   name: string;
   products: string[];
@@ -95,6 +108,7 @@ export interface Promotion {
 }
 
 export interface Payment {
+  supabaseId?: string;
   id: string;
   orderId: string;
   customer: string;

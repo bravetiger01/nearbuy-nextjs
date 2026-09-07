@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@types/leaflet-routing-machine": "^3.2.9",
+    "@supabase/ssr": "^0.12.6",
+    "@supabase/supabase-js": "^2.115.0",
     "chart.js": "^4.5.1",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",

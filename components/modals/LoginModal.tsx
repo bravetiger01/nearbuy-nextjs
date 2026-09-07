@@ -5,37 +5,169 @@ import Modal from '../Modal';
 import { useApp } from '../../lib/store-context';
 
 type Role = 'select' | 'customer' | 'owner';
+type AuthMode = 'login' | 'signup';
 
 export default function LoginModal() {
-  const { showToast, closeModal, setLoggedIn, switchMode } = useApp();
+  const { showToast, closeModal, supabase, switchMode, loginDemo } = useApp();
   const [role, setRole] = useState<Role>('select');
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleOwnerLogin = () => {
+  const signIn = async (expectedRole: 'customer' | 'shop_owner') => {
+    if (!supabase) {
+      showToast('Supabase is not configured yet. Set up .env.local', 'error');
+      return;
+    }
     if (!email.trim() || !password.trim()) {
       showToast('Please enter email and password', 'error');
       return;
     }
-    if (email.trim().toLowerCase() !== 'admin@gmail.com' || password !== 'admin123') {
-      showToast('Invalid credentials. Try admin@gmail.com / admin123', 'error');
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) {
+      setLoading(false);
+      // Full error logged to browser console for debugging
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyErr = error as any;
+      const errStatus  = anyErr?.status  ?? anyErr?.code_number;
+      const errMessage = anyErr?.message ?? String(error);
+      const errCode    = anyErr?.code;
+      console.error('[NearBuy] signInWithPassword error:', errStatus, errMessage, errCode, error);
+
+      // --- Demo fallback ---------------------------------------------------
+      // Supabase GoTrue returns 500 "Database error querying schema" when the
+      // auth.users row was seeded via raw SQL and GoTrue can't process it.
+      // For demo / hackathon use: if status is 500 OR the message matches,
+      // bypass GoTrue and log in via local state.
+      const isGoTrueDown =
+        errStatus === 500 ||
+        errMessage.toLowerCase().includes('database error');
+      const emailNorm   = email.trim().toLowerCase();
+      const isDemoAdmin    = emailNorm === 'admin@gmail.com'    && password === 'admin123';
+      const isDemoCustomer = emailNorm === 'customer@gmail.com' && password === 'customer123';
+
+      if (isGoTrueDown && (isDemoAdmin || isDemoCustomer)) {
+        const demoRole = isDemoAdmin ? 'shop_owner' : 'customer';
+        if (demoRole !== expectedRole) {
+          showToast(
+            expectedRole === 'shop_owner'
+              ? 'This account is not a Shop Owner'
+              : 'This account is not a Customer account',
+            'error'
+          );
+          return;
+        }
+        loginDemo(demoRole);
+        if (expectedRole === 'shop_owner') switchMode('owner');
+        showToast(
+          expectedRole === 'shop_owner'
+            ? 'Welcome! Shop Owner Dashboard loaded.'
+            : 'Logged in as Customer!',
+          'success'
+        );
+        closeModal('login');
+        return;
+      }
+      // ---------------------------------------------------------------------
+
+      const detail = [errMessage, errCode && `code: ${errCode}`, errStatus && `status: ${errStatus}`]
+        .filter(Boolean).join(' | ');
+      showToast(detail || 'Login failed', 'error');
+      return;
+    }
+    if (!data.user) {
+      setLoading(false);
+      showToast('Login failed. Please try again.', 'error');
+      return;
+    }
+    // Verify the account's role against the intended role.
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .maybeSingle();
+    const roleVal = prof?.role;
+    if (expectedRole === 'shop_owner' && roleVal !== 'shop_owner') {
+      await supabase.auth.signOut();
+      setLoading(false);
+      showToast('This account is not a Shop Owner', 'error');
+      return;
+    }
+    if (expectedRole === 'customer' && roleVal && roleVal !== 'customer') {
+      await supabase.auth.signOut();
+      setLoading(false);
+      showToast('This account is not a Customer account', 'error');
+      return;
+    }
+    setLoading(false);
+    if (expectedRole === 'shop_owner') {
+      switchMode('owner');
+      showToast('Welcome back! Shop Owner Dashboard loaded.', 'success');
+    } else {
+      showToast('Logged in as Customer!', 'success');
+    }
+    closeModal('login');
+  };
+
+  const signUp = async (expectedRole: 'customer' | 'shop_owner') => {
+    if (!supabase) {
+      showToast('Supabase is not configured yet. Set up .env.local', 'error');
+      return;
+    }
+    if (!email.trim() || !password.trim()) {
+      showToast('Please enter email and password', 'error');
+      return;
+    }
+    if (password.length < 6) {
+      showToast('Password must be at least 6 characters', 'error');
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    if (error) {
       setLoading(false);
-      setLoggedIn(true);
-      switchMode('owner');
+      console.error('[NearBuy] signUp error:', {
+        message: error.message,
+        status: (error as { status?: number }).status,
+        code: (error as { code?: string }).code,
+        full: error,
+      });
+      const code = (error as { code?: string }).code;
+      const status = (error as { status?: number }).status;
+      const detail = [error.message, code && `code: ${code}`, status && `status: ${status}`]
+        .filter(Boolean).join(' | ');
+      showToast(detail || 'Sign up failed', 'error');
+      return;
+    }
+    if (data.user) {
+      // Create/update the profile with the chosen role.
+      const { error: profError } = await supabase.from('profiles').upsert(
+        { id: data.user.id, email: email.trim().toLowerCase(), role: expectedRole },
+        { onConflict: 'id' }
+      );
+      if (profError) {
+        setLoading(false);
+        showToast('Account created but profile update failed: ' + profError.message, 'error');
+        return;
+      }
+    }
+    setLoading(false);
+    if (!data.session) {
+      showToast('Sign up successful! Check your email to confirm, then sign in.', 'success');
       closeModal('login');
-      showToast('Welcome back! Shop Owner Dashboard loaded.', 'success');
-    }, 800);
-  };
-
-  const handleCustomerLogin = () => {
-    setLoggedIn(true);
+      return;
+    }
+    if (expectedRole === 'shop_owner') switchMode('owner');
+    showToast('Account created and signed in!', 'success');
     closeModal('login');
-    showToast('Logged in as Customer!', 'success');
   };
 
   const footer = (
@@ -47,19 +179,29 @@ export default function LoginModal() {
       )}
       {role === 'customer' && (
         <>
-          <button className="btn-modal-outline" onClick={() => setRole('select')}>BACK</button>
-          <button className="btn-modal-solid" onClick={handleCustomerLogin}>
-            CONTINUE AS CUSTOMER
+          <button className="btn-modal-outline" onClick={() => { setRole('select'); setAuthMode('login'); setEmail(''); setPassword(''); }}>
+            BACK
+          </button>
+          <button
+            className="btn-modal-solid"
+            onClick={() => (authMode === 'login' ? signIn('customer') : signUp('customer'))}
+            disabled={loading}
+          >
+            {loading ? 'PLEASE WAIT…' : authMode === 'login' ? 'SIGN IN →' : 'CREATE ACCOUNT →'}
           </button>
         </>
       )}
       {role === 'owner' && (
         <>
-          <button className="btn-modal-outline" onClick={() => { setRole('select'); setEmail(''); setPassword(''); }}>
+          <button className="btn-modal-outline" onClick={() => { setRole('select'); setAuthMode('login'); setEmail(''); setPassword(''); }}>
             BACK
           </button>
-          <button className="btn-modal-solid" onClick={handleOwnerLogin} disabled={loading}>
-            {loading ? 'VERIFYING…' : 'SIGN IN →'}
+          <button
+            className="btn-modal-solid"
+            onClick={() => (authMode === 'login' ? signIn('shop_owner') : signUp('shop_owner'))}
+            disabled={loading}
+          >
+            {loading ? 'PLEASE WAIT…' : authMode === 'login' ? 'SIGN IN →' : 'CREATE ACCOUNT →'}
           </button>
         </>
       )}
@@ -125,31 +267,21 @@ export default function LoginModal() {
 
       {role === 'customer' && (
         <>
-          <p style={{ fontSize: '0.875rem', color: 'var(--gray-500)', marginBottom: 16 }}>
-            Continue as a guest customer or sign in with your account.
-          </p>
-          <div className="form-g">
-            <label>PHONE / EMAIL (OPTIONAL)</label>
-            <input type="text" className="f-inp" placeholder="+91 9XXXX XXXXX" />
-          </div>
-        </>
-      )}
-
-      {role === 'owner' && (
-        <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, padding: '10px 14px', background: 'var(--lav-50)', border: 'var(--brd-lav)' }}>
-            <span style={{ fontSize: '1rem' }}>🏪</span>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--lav-700)' }}>Shop Owner Portal — Secure Login</span>
+            <span style={{ fontSize: '1rem' }}>🛍️</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--lav-700)' }}>
+              {authMode === 'login' ? 'Customer Sign In' : 'Create a Customer Account'}
+            </span>
           </div>
           <div className="form-g">
             <label>EMAIL ADDRESS</label>
             <input
               type="email"
               className="f-inp"
-              placeholder="admin@gmail.com"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleOwnerLogin()}
+              onKeyDown={(e) => e.key === 'Enter' && (authMode === 'login' ? signIn('customer') : signUp('customer'))}
               autoFocus
             />
           </div>
@@ -161,12 +293,61 @@ export default function LoginModal() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleOwnerLogin()}
+              onKeyDown={(e) => e.key === 'Enter' && (authMode === 'login' ? signIn('customer') : signUp('customer'))}
             />
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)', marginTop: 10 }}>
-            Demo credentials: admin@gmail.com / admin123
-          </p>
+          <div style={{ marginTop: 14, textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+              style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--lav-700)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            </button>
+          </div>
+        </>
+      )}
+
+      {role === 'owner' && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, padding: '10px 14px', background: 'var(--lav-50)', border: 'var(--brd-lav)' }}>
+            <span style={{ fontSize: '1rem' }}>🏪</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--lav-700)' }}>
+              {authMode === 'login' ? 'Shop Owner Portal — Sign In' : 'Shop Owner Portal — Create Account'}
+            </span>
+          </div>
+          <div className="form-g">
+            <label>EMAIL ADDRESS</label>
+            <input
+              type="email"
+              className="f-inp"
+              placeholder="owner@shop.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (authMode === 'login' ? signIn('shop_owner') : signUp('shop_owner'))}
+              autoFocus
+            />
+          </div>
+          <div className="form-g" style={{ marginTop: 12 }}>
+            <label>PASSWORD</label>
+            <input
+              type="password"
+              className="f-inp"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (authMode === 'login' ? signIn('shop_owner') : signUp('shop_owner'))}
+            />
+          </div>
+          <div style={{ marginTop: 14, textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+              style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--lav-700)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              {authMode === 'login' ? "Don't have a shop account? Sign up" : 'Already have an account? Sign in'}
+            </button>
+          </div>
         </>
       )}
     </Modal>
