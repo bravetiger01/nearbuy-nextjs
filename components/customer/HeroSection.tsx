@@ -1,10 +1,8 @@
 'use client';
 
-import { useRef } from 'react';
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
 import { GlobeIcon, MicIcon, CameraIcon, SearchIcon, PinIcon } from '../../lib/icons';
-import Grainient from '../Grainient';
 
 const QUICK_TAGS = ['Notebook', 'Pen', 'Avil', 'Cetirizine', 'Dulcolax', 'Cremaffin', 'Calculator', 'Zyrtec'];
 
@@ -13,40 +11,13 @@ export default function HeroSection() {
 
   return (
     <section className="hero-section" id="heroSection">
-      {/* Grainient Background */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.55 }}>
-        <Grainient
-          color1="#7C3AED"
-          color2="#340e74"
-          color3="#1a0a3c"
-          timeSpeed={1.8}
-          colorBalance={-0.03}
-          warpStrength={1.0}
-          warpFrequency={5.0}
-          warpSpeed={2.0}
-          warpAmplitude={50.0}
-          blendAngle={0.0}
-          blendSoftness={0.05}
-          rotationAmount={500.0}
-          noiseScale={2.0}
-          grainAmount={0.1}
-          grainScale={2.0}
-          grainAnimated={false}
-          contrast={1.5}
-          gamma={1.1}
-          saturation={1.0}
-          zoom={0.9}
-        />
-      </div>
-
       {/* Geometric decorations */}
       <div className="geo-dec geo-tl" />
       <div className="geo-dec geo-tr" />
       <div className="geo-dec geo-br" />
       <div className="geo-line geo-line-h" />
 
-      <div className="hero-inner-centered" style={{ position: 'relative', zIndex: 2 }}>
-
+      <div className="hero-inner-centered">
         {/* Official logo with shine */}
         <div className="hero-logo-wrap">
           <div className="hero-logo-glow" />
@@ -54,8 +25,8 @@ export default function HeroSection() {
             <Image
               src="/logo.jpg"
               alt="nearbuy — find anything nearby"
-              width={80}
-              height={80}
+              width={56}
+              height={56}
               className="hero-logo-img"
               style={{ mixBlendMode: 'multiply' }}
               priority
@@ -64,7 +35,7 @@ export default function HeroSection() {
           </div>
           <div className="hero-logo-badge">
             <span className="hero-label-dot" />
-            NEARBUY · OFFLINE STORES · LIVE INVENTORY
+            LIVE INVENTORY · 2 KM RADIUS
           </div>
         </div>
 
@@ -72,12 +43,12 @@ export default function HeroSection() {
         <h1 className="hero-title-centered">
           Find Any Product
           <br />
-          <span className="title-accent">Nearbuy</span>
-          {' '}— Instantly
+          <span className="title-accent">Nearbuy</span> — Instantly
         </h1>
         <p className="hero-sub-centered">
-          Real-time stock from local shops around you.
-          Reserve it, book a rider, or shop live.
+          Real-time stock from local shops around you. Reserve it, book
+          <br />
+          a rider, or shop live.
         </p>
 
         {/* Language selector */}
@@ -145,19 +116,14 @@ export default function HeroSection() {
             )}
           </div>
 
-          {/* Placed Hero Image correctly in flow */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            margin: '32px 0 16px',
-            animation: 'float 6s ease-in-out infinite',
-          }}>
+          {/* Central Phone Illustration */}
+          <div className="hero-phone-wrap">
             <Image
               src="/hero.png"
               alt="Nearbuy Delivery"
               width={250}
               height={250}
-              style={{ objectFit: 'contain', filter: 'drop-shadow(0 20px 25px rgba(0,0,0,0.1))' }}
+              className="hero-phone-img"
               priority
             />
           </div>
@@ -189,29 +155,6 @@ export default function HeroSection() {
             <PinIcon size={14} />
             SVIT · Vasad
           </div>
-        </div>
-      </div>
-
-      {/* Stats bar */}
-      <div className="hero-stats-bar">
-        <div className="stat-item">
-          <span className="stat-num">5,000+</span>
-          <span className="stat-lbl">Products Listed</span>
-        </div>
-        <div className="stat-div" />
-        <div className="stat-item">
-          <span className="stat-num">120+</span>
-          <span className="stat-lbl">Registered Stores</span>
-        </div>
-        <div className="stat-div" />
-        <div className="stat-item">
-          <span className="stat-num">SVIT Area</span>
-          <span className="stat-lbl">Now Serving Vasad</span>
-        </div>
-        <div className="stat-div" />
-        <div className="stat-item">
-          <span className="stat-num">2 km</span>
-          <span className="stat-lbl">Search Radius</span>
         </div>
       </div>
     </section>
