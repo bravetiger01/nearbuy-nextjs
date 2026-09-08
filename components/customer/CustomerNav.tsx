@@ -42,7 +42,7 @@ export default function CustomerNav() {
       <div className={`nav-drawer ${drawerOpen ? 'open' : ''}`}>
         <div className="nav-drawer-header">
           <div className="nav-drawer-logo">
-            <Image src="/brand/nearbuy_logo.jpg" alt="nearbuy" width={120} height={40} className="drawer-logo-img" />
+            <Image src="/logo.jpg" alt="nearbuy" width={40} height={40} className="drawer-logo-img" style={{ mixBlendMode: 'multiply' }} />
           </div>
           <button className="nav-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close menu">✕</button>
         </div>
@@ -97,11 +97,12 @@ export default function CustomerNav() {
           <a href="#" className="nb-logo-wrap">
             <div className="nb-logo-shine-wrap">
               <Image
-                src="/brand/nearbuy_logo.jpg"
+                src="/logo.jpg"
                 alt="nearbuy — find anything nearby"
-                width={130}
-                height={42}
+                width={40}
+                height={40}
                 className="nb-logo-img"
+                style={{ mixBlendMode: 'multiply' }}
                 priority
               />
               <div className="nb-logo-shimmer" />

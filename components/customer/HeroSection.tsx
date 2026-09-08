@@ -52,11 +52,12 @@ export default function HeroSection() {
           <div className="hero-logo-glow" />
           <div className="hero-logo-shine-container">
             <Image
-              src="/brand/nearbuy_logo.jpg"
+              src="/logo.jpg"
               alt="nearbuy — find anything nearby"
-              width={240}
+              width={80}
               height={80}
               className="hero-logo-img"
+              style={{ mixBlendMode: 'multiply' }}
               priority
             />
             <div className="hero-logo-shimmer-bar" />

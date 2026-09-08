@@ -95,14 +95,14 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         position: 'relative',
       }}>
         <Image
-          src="/brand/nearbuy_logo.jpg"
+          src="/logo.jpg"
           alt="nearbuy"
-          width={200}
-          height={66}
+          width={100}
+          height={100}
           style={{
             objectFit: 'contain',
-            filter: 'brightness(0) invert(1)',
             borderRadius: 8,
+            mixBlendMode: 'multiply'
           }}
           priority
         />

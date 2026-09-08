@@ -11,11 +11,11 @@ export default function Footer() {
         {/* Logo and Tagline */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 16 }}>
           <Image
-            src="/brand/nearbuy_logo.jpg"
+            src="/logo.jpg"
             alt="nearbuy"
-            width={140}
+            width={48}
             height={48}
-            style={{ objectFit: 'contain' }}
+            style={{ objectFit: 'contain', mixBlendMode: 'multiply' }}
           />
           <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', maxWidth: 400 }}>
             Discover local stores, search inventory in real-time, and get items delivered instantly. Your neighborhood marketplace.
