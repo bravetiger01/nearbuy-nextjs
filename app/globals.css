@@ -5456,3 +5456,230 @@ body {
     background: transparent !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   QUICK ACTIONS — Owner Dashboard
+   ══════════════════════════════════════════════════════ */
+.quick-actions-boxy {
+  background: var(--white);
+  border: var(--brd);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.qa-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--gray-400);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.qa-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.qa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: var(--brd);
+  background: var(--white);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+  white-space: nowrap;
+}
+
+.qa-btn:hover {
+  background: var(--lav-50);
+  border-color: var(--lav-300);
+  color: var(--lav-700);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124,58,237,0.15);
+}
+
+.qa-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.qa-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.qa-lbl {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.promo-banner-boxy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--lav-50);
+  border: var(--brd-lav);
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lav-700);
+  transition: background 0.15s;
+}
+
+.promo-banner-boxy:hover {
+  background: var(--lav-100);
+}
+
+/* ══════════════════════════════════════════════════════
+   LOGO SHIMMER — Reusable across all logo placements
+   ══════════════════════════════════════════════════════ */
+.nb-logo-shine-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.nb-logo-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: logo-shimmer 3.5s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+@keyframes logo-shimmer {
+  0% { background-position: -200% 0; }
+  60% { background-position: 200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ══════════════════════════════════════════════════════
+   MICRO-ANIMATIONS — Buttons & interactive elements
+   ══════════════════════════════════════════════════════ */
+
+/* Generic hover lift for all primary CTA buttons */
+.btn-cta,
+.user-chip,
+.btn-modal-solid {
+  transition: transform 0.18s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.18s cubic-bezier(0.4,0,0.2,1),
+              background 0.18s ease,
+              border-color 0.18s ease !important;
+}
+
+.user-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18) !important;
+}
+
+.btn-modal-solid:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2) !important;
+}
+
+/* Nav link hover underline slide */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  right: 50%;
+  height: 2px;
+  background: var(--lav-500);
+  transition: left 0.22s ease, right 0.22s ease;
+}
+
+.nav-link:hover::after {
+  left: 8px;
+  right: 8px;
+}
+
+/* Sidebar nav item hover */
+.sbl {
+  transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
+}
+
+.sbl:hover {
+  padding-left: 20px !important;
+}
+
+/* Icon buttons subtle scale */
+.icon-btn,
+.icon-btn-dark {
+  transition: background 0.15s ease, transform 0.15s ease !important;
+}
+
+.icon-btn:hover,
+.icon-btn-dark:hover {
+  transform: scale(1.08) !important;
+}
+
+/* Plan badge glow pulse */
+@keyframes planGlow {
+  0%, 100% { box-shadow: 0 2px 8px rgba(124,58,237,0.35); }
+  50% { box-shadow: 0 2px 16px rgba(124,58,237,0.65), 0 0 24px rgba(167,139,250,0.3); }
+}
+
+/* KPI card hover lift */
+.kpi-boxy {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-boxy:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1) !important;
+}
+
+/* Chart card hover */
+.chart-card-boxy {
+  transition: box-shadow 0.2s ease;
+}
+
+.chart-card-boxy:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   DARK MODE — Quick actions & shimmer
+   ══════════════════════════════════════════════════════ */
+[data-theme="dark"] .quick-actions-boxy {
+  background: #111;
+  border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .qa-btn {
+  background: #1a1a1a;
+  color: var(--gray-400);
+  border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .qa-btn:hover {
+  background: var(--lav-900);
+  border-color: var(--lav-700);
+  color: var(--lav-300);
+}
+
+[data-theme="dark"] .promo-banner-boxy {
+  background: var(--lav-900);
+  border-color: var(--lav-700);
+}
+
+[data-theme="dark"] .nb-logo-shimmer {
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: logo-shimmer 3.5s ease-in-out infinite;
+}

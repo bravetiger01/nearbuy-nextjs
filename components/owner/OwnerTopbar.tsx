@@ -33,6 +33,20 @@ export default function OwnerTopbar() {
       </button>
       <h2 className="topbar-ttl">{titles[ownerSection] ?? 'Dashboard'}</h2>
       <div className="topbar-r">
+        {/* Plan badge */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.06em',
+          padding: '4px 10px',
+          background: 'linear-gradient(135deg, #7C3AED, #A78BFA)',
+          color: '#fff',
+          borderRadius: '3px',
+          boxShadow: '0 2px 8px rgba(124,58,237,0.35)',
+          whiteSpace: 'nowrap',
+          animation: 'planGlow 3s ease-in-out infinite',
+        }}>
+          ⚡ SMART + PRO
+        </div>
         <button className="icon-btn-dark" onClick={() => showToast('2 new reservation requests', 'info')}>
           <BellIcon size={15} />
           <span className="notif-badge">2</span>

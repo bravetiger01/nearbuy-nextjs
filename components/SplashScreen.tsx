@@ -55,65 +55,44 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         filter: 'blur(30px)',
       }} />
 
-      {/* Cart icon floating animation */}
-      <div style={{
-        transform: phase === 'enter' ? 'scale(0.2) translateY(60px)' : 'scale(1) translateY(0)',
-        transition: 'transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        marginBottom: '28px',
-        animation: phase === 'hold' ? 'cartBounce 2s ease-in-out infinite' : 'none',
-        position: 'relative',
-      }}>
-        {/* Glowing ring behind icon */}
-        <div style={{
-          position: 'absolute', inset: '-12px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.4) 0%, transparent 70%)',
-          animation: 'ringPulse 1.5s ease-in-out infinite',
-        }} />
-        <div style={{
-          width: 100, height: 100,
-          background: 'linear-gradient(135deg, #7C3AED, #5B21B6)',
-          borderRadius: '28px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 20px 60px rgba(124,58,237,0.5)',
-          position: 'relative',
-        }}>
-          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-        </div>
-      </div>
 
-      {/* Logo */}
+
+      {/* Logo — hero of the splash */}
       <div style={{
         opacity: phase === 'enter' ? 0 : 1,
-        transform: phase === 'enter' ? 'translateY(20px)' : 'translateY(0)',
-        transition: 'opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s',
-        marginBottom: '10px',
+        transform: phase === 'enter' ? 'scale(0.7) translateY(30px)' : 'scale(1) translateY(0)',
+        transition: 'opacity 0.7s ease 0.3s, transform 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.3s',
+        marginBottom: '20px',
         position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
-        <Image
-          src="/logo.jpg"
-          alt="nearbuy"
-          width={100}
-          height={100}
-          style={{
-            objectFit: 'contain',
-            borderRadius: 8,
-            mixBlendMode: 'multiply'
-          }}
-          priority
-        />
-        {/* Logo shimmer sweep */}
+        {/* Glow ring */}
         <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-          backgroundSize: '200% 100%',
-          animation: phase === 'hold' ? 'shimmer 2s ease-in-out infinite' : 'none',
-          borderRadius: 8,
+          position: 'absolute', inset: '-18px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.45) 0%, transparent 70%)',
+          animation: phase === 'hold' ? 'glowPulse 2.5s ease-in-out infinite' : 'none',
+          filter: 'blur(12px)',
         }} />
+        <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 16px 48px rgba(124,58,237,0.5)' }}>
+          <Image
+            src="/logo.jpg"
+            alt="nearbuy"
+            width={130}
+            height={130}
+            style={{ objectFit: 'contain', display: 'block' }}
+            priority
+          />
+          {/* Logo shimmer sweep */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%)',
+            backgroundSize: '200% 100%',
+            animation: phase === 'hold' ? 'shimmer 2.5s ease-in-out infinite' : 'none',
+          }} />
+        </div>
       </div>
 
       {/* Tagline */}
@@ -181,13 +160,9 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
           from { transform: scale(1) rotate(0deg); }
           to { transform: scale(1.15) rotate(10deg); }
         }
-        @keyframes cartBounce {
-          0%, 100% { transform: scale(1) translateY(0); }
-          50% { transform: scale(1.04) translateY(-8px); }
-        }
-        @keyframes ringPulse {
-          0%, 100% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.1); }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.12); }
         }
         @keyframes shimmer {
           0% { background-position: -200% 0; }

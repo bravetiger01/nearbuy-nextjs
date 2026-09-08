@@ -1,8 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
 import {
-  LogoMark,
   BarChartIcon,
   StoreIcon,
   BoxIcon,
@@ -61,7 +61,15 @@ export default function OwnerSidebar() {
     <aside className={`sidebar-boxy ${sidebarCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'open' : ''}`}>
       <div className="sb-top">
         <div className="sb-logo-wrap">
-          <LogoMark width={130} height={30} />
+          <div className="nb-logo-shine-wrap" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+              <Image src="/logo.jpg" alt="nearbuy" width={36} height={36} style={{ objectFit: 'contain', display: 'block' }} priority />
+              <div className="nb-logo-shimmer" />
+            </div>
+            {!sidebarCollapsed && (
+              <span style={{ fontFamily: 'var(--display)', fontWeight: 900, fontSize: '1.05rem', letterSpacing: '-0.03em', color: 'var(--black)' }}>nearbuy</span>
+            )}
+          </div>
           <span className="sb-pro-tag" style={{ background: '#F59E0B', color: '#fff', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', border: '1px solid #B45309', marginLeft: 10 }}>
             GOLD SELLER
           </span>
