@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
 import { MicIcon, CameraIcon, SearchIcon, PinIcon } from '../../lib/icons';
 
