@@ -47,6 +47,7 @@ export interface StoreResult extends Store {
 }
 
 export interface LedgerEntry {
+  supabaseId?: string;
   date: string;
   desc: string;
   type: 'credit' | 'debit';
@@ -55,6 +56,7 @@ export interface LedgerEntry {
 }
 
 export interface Expense {
+  supabaseId?: string;
   date: string;
   name: string;
   category: string;
@@ -63,11 +65,12 @@ export interface Expense {
 
 export interface Reservation {
   id: string;
+  supabaseId?: string;
   customer: string;
   product: string;
   qty: number;
   time: string;
-  status: 'pending' | 'confirmed';
+  status: 'pending' | 'confirmed' | 'ready' | 'picked_up' | 'cancelled' | 'expired';
 }
 
 export interface SnapProduct {
@@ -82,8 +85,14 @@ export interface SnapProduct {
 export interface ScannedProduct {
   name: string;
   qty: number;
+  /** Purchase rate / cost price (from the bill) */
   unitPrice: number;
+  /** Selling price the owner sets (defaults to a margin above unitPrice) */
+  sellingPrice: number;
   category: string;
+  hsn: string;
+  /** Whether this item is included in the import */
+  include: boolean;
 }
 
 export interface RiderContext {
@@ -94,6 +103,7 @@ export interface RiderContext {
 }
 
 export interface Promotion {
+  supabaseId?: string;
   id: string;
   name: string;
   products: string[];
@@ -104,6 +114,7 @@ export interface Promotion {
 }
 
 export interface Payment {
+  supabaseId?: string;
   id: string;
   orderId: string;
   customer: string;
@@ -120,6 +131,18 @@ export interface ChatMessage {
   ts: number;
 }
 
-export type Mode = 'customer' | 'owner';
+export type Mode = 'customer' | 'owner' | 'rider';
 
 export type ToastType = 'success' | 'error' | 'info';
+
+export interface DeliveryJob {
+  id: string;
+  shopName: string;
+  shopAddress: string;
+  customerAddress: string;
+  distanceKm: number;
+  fee: number;
+  status: 'available' | 'accepted' | 'picked_up' | 'delivered';
+  shopCoords?: [number, number];
+  customerCoords?: [number, number];
+}

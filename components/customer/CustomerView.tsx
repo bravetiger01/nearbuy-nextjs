@@ -5,8 +5,9 @@ import HeroSection from './HeroSection';
 import LocationBar from './LocationBar';
 import FeaturesSection from './FeaturesSection';
 import FashionSection from './FashionSection';
-import TeamSection from './TeamSection';
 import ResultsSection from './ResultsSection';
+import SeasonalBanner from './SeasonalBanner';
+import StoreMap from './StoreMap';
 import Footer from './Footer';
 
 export default function CustomerView() {
@@ -15,11 +16,12 @@ export default function CustomerView() {
       <CustomerNav />
       <HeroSection />
       <LocationBar />
+      <SeasonalBanner />
       <FeaturesSection />
       <FashionSection />
+      <StoreMap />
       <ResultsSection />
       <TeamSection />
-      <Footer />
     </div>
   );
 }

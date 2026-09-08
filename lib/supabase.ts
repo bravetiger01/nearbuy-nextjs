@@ -91,7 +91,7 @@ export async function fetchShopProducts(shopId: string): Promise<SupabaseShopPro
     console.error('fetchShopProducts error:', error.message);
     return [];
   }
-  return (data as SupabaseShopProduct[]) ?? [];
+  return (data as unknown as SupabaseShopProduct[]) ?? [];
 }
 
 // ─── Fetch ALL shop_products (for customer search) ────────────────────────────
@@ -119,7 +119,7 @@ export async function fetchAllShopProducts(): Promise<SupabaseShopProduct[]> {
     console.error('fetchAllShopProducts error:', error.message);
     return [];
   }
-  return (data as SupabaseShopProduct[]) ?? [];
+  return (data as unknown as SupabaseShopProduct[]) ?? [];
 }
 
 // ─── Upsert a product + shop_product (owner adds/edits product) ───────────────

@@ -1,63 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
-import { BellIcon, LogoMark, MoonIcon, StoreIcon, UserIcon, MenuIcon } from '../../lib/icons';
+import { BellIcon, MoonIcon, StoreIcon, TruckIcon, UserIcon } from '../../lib/icons';
+
+function ReservationTimer({ time }: { time: string }) {
+  const [remaining, setRemaining] = useState('');
+  useEffect(() => {
+    const calc = () => {
+      const expires = new Date(time).getTime() + 2 * 60 * 60 * 1000;
+      const diff = expires - Date.now();
+      if (diff <= 0) { setRemaining('Expired'); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setRemaining(`${h}h ${m}m left`);
+    };
+    calc();
+    const iv = setInterval(calc, 30000);
+    return () => clearInterval(iv);
+  }, [time]);
+  return <small style={{ color: remaining === 'Expired' ? '#ef4444' : '#10b981', fontWeight: 700 }}>{remaining}</small>;
+}
 
 export default function CustomerNav() {
-  const { toggleTheme, openModal, loggedIn, isOwner, switchMode } = useApp();
+  const { toggleTheme, openModal, loggedIn, isOwner, switchMode, reservations = [] } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-    setMobileMenuOpen(false);
-  };
 
   return (
     <nav className="c-nav" id="cNav">
       <div className="c-nav-inner">
-        <a
-          href="#heroSection"
-          className="nb-logo"
-          onClick={(e) => { e.preventDefault(); scrollTo('heroSection'); }}
-        >
+        <a href="#" className="nb-logo">
           <LogoMark />
         </a>
-
-        {/* Desktop nav links */}
         <div className="c-nav-links">
-          <a
-            href="#featSection"
-            className="nav-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('featSection'); }}
-          >
+          <a href="#featSection" className="nav-link">
             Features
           </a>
-          <a
-            href="#fashionSection"
-            className="nav-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('fashionSection'); }}
-          >
+          <a href="#fashionSection" className="nav-link">
             Shop Live
           </a>
-          <a
-            href="#resultsSection"
-            className="nav-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('resultsSection'); }}
-          >
+          <a href="#resultsSection" className="nav-link">
             Search
           </a>
-          <a
-            href="#teamSection"
-            className="nav-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('teamSection'); }}
-          >
-            Team
-          </a>
         </div>
-
         <div className="c-nav-right">
           <button className="icon-btn" title="Toggle Dark Mode" onClick={toggleTheme}>
             <MoonIcon size={16} />
@@ -101,7 +87,7 @@ export default function CustomerNav() {
           {isOwner ? (
             <button
               className="user-chip"
-              style={{ background: 'var(--black)', borderColor: 'var(--black)', cursor: 'pointer' }}
+              style={{ background: 'var(--lav-500)', borderColor: 'var(--lav-700)', cursor: 'pointer' }}
               onClick={() => switchMode('owner')}
             >
               <StoreIcon size={14} />
@@ -114,64 +100,20 @@ export default function CustomerNav() {
               onClick={() => openModal('login')}
             >
               <StoreIcon size={13} />
-              SHOP OWNER
+              SHOP OWNER LOGIN
             </button>
           )}
 
           <div
             className="user-chip"
-            style={{ cursor: 'pointer', background: loggedIn ? 'var(--black)' : undefined }}
+            style={{ cursor: 'pointer', background: loggedIn ? 'var(--lav-700)' : undefined }}
             onClick={() => (!loggedIn ? openModal('login') : undefined)}
           >
             <UserIcon size={14} />
             {loggedIn ? 'YOU' : 'LOGIN'}
           </div>
-
-          {/* Mobile hamburger */}
-          <button
-            className="icon-btn c-nav-hamburger"
-            title="Menu"
-            onClick={() => setMobileMenuOpen((o) => !o)}
-            aria-label="Open mobile menu"
-          >
-            <MenuIcon size={16} />
-          </button>
         </div>
       </div>
-
-      {/* Mobile dropdown menu */}
-      {mobileMenuOpen && (
-        <div className="c-nav-mobile-drop">
-          <a
-            href="#featSection"
-            className="c-nav-mobile-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('featSection'); }}
-          >
-            Features
-          </a>
-          <a
-            href="#fashionSection"
-            className="c-nav-mobile-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('fashionSection'); }}
-          >
-            Shop Live
-          </a>
-          <a
-            href="#resultsSection"
-            className="c-nav-mobile-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('resultsSection'); }}
-          >
-            Search
-          </a>
-          <a
-            href="#teamSection"
-            className="c-nav-mobile-link"
-            onClick={(e) => { e.preventDefault(); scrollTo('teamSection'); }}
-          >
-            Team
-          </a>
-        </div>
-      )}
     </nav>
   );
 }

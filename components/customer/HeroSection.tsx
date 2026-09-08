@@ -1,58 +1,104 @@
 'use client';
 
+import { useRef } from 'react';
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
 import { GlobeIcon, MicIcon, CameraIcon, SearchIcon, PinIcon } from '../../lib/icons';
+import Grainient from '../Grainient';
 
-const QUICK_TAGS = ['Notebook', 'Chopdi (Notebook)', 'Pen', 'Calculator', 'Dawai (Medicine)'];
+const QUICK_TAGS = ['Notebook', 'Pen', 'Avil', 'Cetirizine', 'Dulcolax', 'Cremaffin', 'Calculator', 'Zyrtec'];
 
 export default function HeroSection() {
   const { searchTerm, handleSearchInput, doSearch, quickSearch, suggestions, openModal, lang, setLang } = useApp();
 
   return (
     <section className="hero-section" id="heroSection">
+      {/* Grainient Background */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.55 }}>
+        <Grainient
+          color1="#7C3AED"
+          color2="#340e74"
+          color3="#1a0a3c"
+          timeSpeed={1.8}
+          colorBalance={-0.03}
+          warpStrength={1.0}
+          warpFrequency={5.0}
+          warpSpeed={2.0}
+          warpAmplitude={50.0}
+          blendAngle={0.0}
+          blendSoftness={0.05}
+          rotationAmount={500.0}
+          noiseScale={2.0}
+          grainAmount={0.1}
+          grainScale={2.0}
+          grainAnimated={false}
+          contrast={1.5}
+          gamma={1.1}
+          saturation={1.0}
+          zoom={0.9}
+        />
+      </div>
+
+      {/* Geometric decorations */}
       <div className="geo-dec geo-tl" />
       <div className="geo-dec geo-tr" />
       <div className="geo-dec geo-br" />
       <div className="geo-line geo-line-h" />
-      <div className="geo-line geo-line-v" />
 
-      <div className="hero-inner">
-        <div className="hero-text-col">
-          <div className="hero-label">
+      <div className="hero-inner-centered" style={{ position: 'relative', zIndex: 2 }}>
+
+        {/* Official logo with shine */}
+        <div className="hero-logo-wrap">
+          <div className="hero-logo-glow" />
+          <div className="hero-logo-shine-container">
+            <Image
+              src="/logo.jpg"
+              alt="nearbuy — find anything nearby"
+              width={80}
+              height={80}
+              className="hero-logo-img"
+              style={{ mixBlendMode: 'multiply' }}
+              priority
+            />
+            <div className="hero-logo-shimmer-bar" />
+          </div>
+          <div className="hero-logo-badge">
             <span className="hero-label-dot" />
             NEARBUY · OFFLINE STORES · LIVE INVENTORY
           </div>
-          <h1 className="hero-title">
-            FIND ANY
-            <br />
-            PRODUCT
-            <br />
-            <span className="title-accent">NEARBUY</span>
-          </h1>
-          <p className="hero-sub">
-            Real-time stock from local shops around you. Reserve it. Book a rider. Or shop fashion live with your personal
-            guide.
-          </p>
+        </div>
 
-          <div className="lang-row">
-            <span className="lang-label">
-              <GlobeIcon size={14} />
-              LANGUAGE
-            </span>
-            <select
-              className="lang-select"
-              value={lang}
-              onChange={(e) => {
-                setLang(e.target.value);
-              }}
-            >
-              <option value="en-US">English</option>
-              <option value="hi-IN">हिंदी</option>
-              <option value="gu-IN">ગુજરાતી</option>
-            </select>
-          </div>
+        {/* Headline */}
+        <h1 className="hero-title-centered">
+          Find Any Product
+          <br />
+          <span className="title-accent">Nearby</span>
+          {' '}— Instantly
+        </h1>
+        <p className="hero-sub-centered">
+          Real-time stock from local shops around you.
+          Reserve it, book a rider, or shop live.
+        </p>
 
+        {/* Language selector */}
+        <div className="hero-lang-row">
+          <span className="lang-label">
+            <GlobeIcon size={13} />
+            LANGUAGE
+          </span>
+          <select
+            className="lang-select"
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+          >
+            <option value="en-US">English</option>
+            <option value="hi-IN">हिंदी</option>
+            <option value="gu-IN">ગુજરાતી</option>
+          </select>
+        </div>
+
+        {/* Search bar — CENTERED and prominent */}
+        <div className="hero-search-wrap">
           <div className="search-outer">
             <div className="search-box-boxy" id="searchBox">
               <div className="search-icon-wrap">
@@ -61,7 +107,7 @@ export default function HeroSection() {
               <input
                 type="text"
                 className="search-inp"
-                placeholder="Search notebooks, charger, medicine…"
+                placeholder="Search notebooks, medicine, charger…"
                 value={searchTerm}
                 autoComplete="off"
                 onChange={(e) => handleSearchInput(e.target.value)}
@@ -93,33 +139,54 @@ export default function HeroSection() {
             )}
           </div>
 
-          <div className="quick-tags">
-            <span className="qt-lbl">QUICK SEARCH —</span>
-            {QUICK_TAGS.map((t) => (
-              <button className="qt-tag" key={t} onClick={() => quickSearch(t)}>
-                {t}
-              </button>
-            ))}
+          {/* Placed Hero Image correctly in flow */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            margin: '32px 0 16px',
+            animation: 'float 6s ease-in-out infinite',
+          }}>
+            <Image
+              src="/hero.png"
+              alt="Nearbuy Delivery"
+              width={250}
+              height={250}
+              style={{ objectFit: 'contain', filter: 'drop-shadow(0 20px 25px rgba(0,0,0,0.1))' }}
+              priority
+            />
+          </div>
+
+          {/* Quick tags */}
+          <div className="quick-tags-centered">
+            <span className="qt-lbl">QUICK —</span>
+            <div className="qt-scroll">
+              {QUICK_TAGS.map((t) => (
+                <button className="qt-tag" key={t} onClick={() => quickSearch(t)}>
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="hero-img-col">
-          <div className="hero-img-frame">
-            <Image src="/hero.png" alt="nearbuy product discovery illustration" className="hero-img" width={500} height={500} />
-            <div className="hero-img-badge top-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#8B5CF6">
-                <circle cx="12" cy="12" r="10" />
-              </svg>
-              LIVE INVENTORY
-            </div>
-            <div className="hero-img-badge bot-badge">
-              <PinIcon size={12} />
-              5 STORES NEARBY
-            </div>
+        {/* Feature pills */}
+        <div className="hero-pills-row">
+          <button className="hero-pill" onClick={() => openModal('snap')}>
+            <CameraIcon size={14} />
+            Snap &amp; Search
+          </button>
+          <button className="hero-pill" onClick={() => openModal('voice')}>
+            <MicIcon size={14} />
+            Voice Search
+          </button>
+          <div className="hero-pill static">
+            <PinIcon size={14} />
+            SVIT · Vasad
           </div>
         </div>
       </div>
 
+      {/* Stats bar */}
       <div className="hero-stats-bar">
         <div className="stat-item">
           <span className="stat-num">5,000+</span>

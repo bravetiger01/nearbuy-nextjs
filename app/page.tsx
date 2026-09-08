@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { AppProvider, useApp } from '../lib/store-context';
 import ModeSwitcher from '../components/ModeSwitcher';
 import Toast from '../components/Toast';
@@ -16,9 +17,15 @@ import AddProductModal from '../components/modals/AddProductModal';
 import AddTxnModal from '../components/modals/AddTxnModal';
 import AddExpModal from '../components/modals/AddExpModal';
 
+import RiderView from '../components/rider/RiderView';
+import SplashScreen from '../components/SplashScreen';
+
 function CurrentView() {
   const { mode } = useApp();
-  return mode === 'customer' ? <CustomerView /> : <OwnerView />;
+  if (mode === 'customer') return <CustomerView />;
+  if (mode === 'owner') return <OwnerView />;
+  if (mode === 'rider') return <RiderView />;
+  return null;
 }
 
 function ModalHosts() {
@@ -40,12 +47,35 @@ function ModalHosts() {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const seen = sessionStorage.getItem('nb_splash_seen');
+    if (!seen) {
+      setShowSplash(true);
+    } else {
+      setReady(true);
+    }
+  }, []);
+
+  const handleSplashDone = () => {
+    sessionStorage.setItem('nb_splash_seen', '1');
+    setShowSplash(false);
+    setReady(true);
+  };
+
   return (
-    <AppProvider>
-      <ModeSwitcher />
-      <CurrentView />
-      <Toast />
-      <ModalHosts />
-    </AppProvider>
+    <>
+      {showSplash && <SplashScreen onDone={handleSplashDone} />}
+      {ready && (
+        <AppProvider>
+          <ModeSwitcher />
+          <CurrentView />
+          <Toast />
+          <ModalHosts />
+        </AppProvider>
+      )}
+    </>
   );
 }
