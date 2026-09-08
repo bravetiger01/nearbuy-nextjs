@@ -20,6 +20,10 @@ export default function ResultsSection() {
     aiRecs,
     quickSearch,
     resultsRef,
+    activeTranslation,
+    isSpeaking,
+    speakCurrentResult,
+    stopVoice,
   } = useApp();
 
   const searched = currentQuery !== '';
@@ -29,49 +33,130 @@ export default function ResultsSection() {
     <section className="results-section" id="resultsSection" ref={resultsRef}>
       <div className="section-wrap">
         {searched && (
-          <div className="results-header-boxy">
-            <div className="rh-left">
-              <h2 className="rh-title">&quot;{currentQuery}&quot;</h2>
-              <div className="rh-sub">
-                {LANG_KEYWORDS[currentQuery.toLowerCase()] && (
-                  <span className="text-emerald-600 font-medium mr-2">
-                    🌐 Detected local term. Showing results for &apos;{LANG_KEYWORDS[currentQuery.toLowerCase()]}&apos;.
+          <>
+            {/* Translation Recognition Banner */}
+            {activeTranslation && (
+              <div className="translation-result-banner">
+                <div className="trb-left">
+                  <span className="trb-icon">🌐</span>
+                  <div>
+                    <div className="trb-tag-row">
+                      <span className="trb-badge">{activeTranslation.languageName.toUpperCase()} DETECTED</span>
+                      <span className="trb-subtext">Local Term Translation</span>
+                    </div>
+                    <div className="trb-main">
+                      <span className="trb-word">&ldquo;{activeTranslation.matchedWord}&rdquo;</span>
+                      {activeTranslation.phoneticLabel &&
+                        activeTranslation.phoneticLabel.toLowerCase() !==
+                          activeTranslation.matchedWord.toLowerCase() && (
+                          <span className="trb-phonetic">({activeTranslation.phoneticLabel})</span>
+                        )}{' '}
+                      <span className="trb-equals">means</span>{' '}
+                      <span className="trb-resolved">&ldquo;{activeTranslation.resolvedTerm}&rdquo;</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="trb-right">
+                  <span className="trb-showing">
+                    Showing {currentResults.length} store{currentResults.length !== 1 ? 's' : ''} with live stock for{' '}
+                    <strong>{activeTranslation.resolvedTerm}</strong>
                   </span>
+                  <button
+                    type="button"
+                    className={`say-result-btn ${isSpeaking ? 'speaking' : ''}`}
+                    onClick={() => (isSpeaking ? stopVoice() : speakCurrentResult())}
+                    title="Speak result aloud in local language"
+                  >
+                    {isSpeaking ? (
+                      <>
+                        <span className="speaking-wave">
+                          <span className="sw-bar" />
+                          <span className="sw-bar" />
+                          <span className="sw-bar" />
+                        </span>
+                        <span>STOP AUDIO</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="srb-icon">🔊</span>
+                        <span>SAY RESULT</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="results-header-boxy">
+              <div className="rh-left">
+                <h2 className="rh-title">&quot;{currentQuery}&quot;</h2>
+                <div className="rh-sub">
+                  {!activeTranslation && LANG_KEYWORDS[currentQuery.toLowerCase()] && (
+                    <span className="text-emerald-600 font-medium mr-2">
+                      🌐 Showing results for &apos;{LANG_KEYWORDS[currentQuery.toLowerCase()]}&apos;.
+                    </span>
+                  )}
+                  {noResults
+                    ? 'No stores found near SVIT Vasad'
+                    : `${currentResults.length} store${currentResults.length > 1 ? 's' : ''} found · within 2 km of SVIT Vasad`}
+                </div>
+              </div>
+              <div className="rh-right">
+                {/* Audio readout button if no translation banner shown */}
+                {!activeTranslation && (
+                  <button
+                    type="button"
+                    className={`say-result-btn ${isSpeaking ? 'speaking' : ''}`}
+                    onClick={() => (isSpeaking ? stopVoice() : speakCurrentResult())}
+                    title="Speak result aloud"
+                  >
+                    {isSpeaking ? (
+                      <>
+                        <span className="speaking-wave">
+                          <span className="sw-bar" />
+                          <span className="sw-bar" />
+                          <span className="sw-bar" />
+                        </span>
+                        <span>STOP</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="srb-icon">🔊</span>
+                        <span>SAY RESULT</span>
+                      </>
+                    )}
+                  </button>
                 )}
-                {noResults
-                  ? 'No stores found near SVIT Vasad'
-                  : `${currentResults.length} store${currentResults.length > 1 ? 's' : ''} found · within 2 km of SVIT Vasad`}
+
+                <div className="view-toggle-boxy">
+                  <button
+                    className={`vtb ${currentResultView === 'list' ? 'active' : ''}`}
+                    onClick={() => setCurrentResultView('list')}
+                  >
+                    <ListIcon size={14} />
+                    LIST
+                  </button>
+                  <button
+                    className={`vtb ${currentResultView === 'map' ? 'active' : ''}`}
+                    onClick={() => setCurrentResultView('map')}
+                  >
+                    <MapIcon size={14} />
+                    MAP
+                  </button>
+                </div>
+                <select
+                  className="sort-boxy"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortBy)}
+                >
+                  <option value="distance">NEAREST FIRST</option>
+                  <option value="stock">MOST STOCK</option>
+                  <option value="updated">RECENTLY UPDATED</option>
+                  <option value="rating">HIGHEST RATED</option>
+                </select>
               </div>
             </div>
-            <div className="rh-right">
-              <div className="view-toggle-boxy">
-                <button
-                  className={`vtb ${currentResultView === 'list' ? 'active' : ''}`}
-                  onClick={() => setCurrentResultView('list')}
-                >
-                  <ListIcon size={14} />
-                  LIST
-                </button>
-                <button
-                  className={`vtb ${currentResultView === 'map' ? 'active' : ''}`}
-                  onClick={() => setCurrentResultView('map')}
-                >
-                  <MapIcon size={14} />
-                  MAP
-                </button>
-              </div>
-              <select
-                className="sort-boxy"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortBy)}
-              >
-                <option value="distance">NEAREST FIRST</option>
-                <option value="stock">MOST STOCK</option>
-                <option value="updated">RECENTLY UPDATED</option>
-                <option value="rating">HIGHEST RATED</option>
-              </select>
-            </div>
-          </div>
+          </>
         )}
 
         {searched && aiRecs.length > 0 && (
