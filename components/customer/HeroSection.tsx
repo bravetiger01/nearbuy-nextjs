@@ -46,24 +46,25 @@ export default function HeroSection() {
       <div className="geo-line geo-line-h" />
 
       <div className="hero-inner-centered" style={{ position: 'relative', zIndex: 2 }}>
-        
+
         {/* Official logo with shine */}
         <div className="hero-logo-wrap">
           <div className="hero-logo-glow" />
           <div className="hero-logo-shine-container">
             <Image
-              src="/brand/nearbuy_logo.jpg"
+              src="/logo.jpg"
               alt="nearbuy — find anything nearby"
-              width={240}
+              width={80}
               height={80}
               className="hero-logo-img"
+              style={{ mixBlendMode: 'multiply' }}
               priority
             />
             <div className="hero-logo-shimmer-bar" />
           </div>
           <div className="hero-logo-badge">
             <span className="hero-label-dot" />
-            LIVE INVENTORY · 2 KM RADIUS
+            NEARBUY · OFFLINE STORES · LIVE INVENTORY
           </div>
         </div>
 

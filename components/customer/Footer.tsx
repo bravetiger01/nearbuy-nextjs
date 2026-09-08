@@ -1,58 +1,132 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
+import { LogoMark } from '../../lib/icons';
+
+const scrollTo = (id: string) => {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--white)', borderTop: 'var(--brd)', padding: '40px 20px', marginTop: '40px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
-        
-        {/* Logo and Tagline */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 16 }}>
-          <Image
-            src="/brand/nearbuy_logo.jpg"
-            alt="nearbuy"
-            width={140}
-            height={48}
-            style={{ objectFit: 'contain' }}
-          />
-          <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', maxWidth: 400 }}>
-            Discover local stores, search inventory in real-time, and get items delivered instantly. Your neighborhood marketplace.
+    <footer className="nb-footer" id="footer">
+      <div className="footer-inner">
+
+        {/* Brand column */}
+        <div className="footer-brand">
+          <LogoMark width={140} height={32} />
+          <p className="footer-tagline">
+            Find any product at offline stores near you — real-time stock, live inventory, instant reserve.
           </p>
+          <div className="footer-badges">
+            <span className="footer-badge">MADE IN INDIA 🇮🇳</span>
+            <span className="footer-badge">SVIT · 2025</span>
+          </div>
         </div>
 
-        {/* Links Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 24, textAlign: 'center' }}>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h4 style={{ fontWeight: 800, color: 'var(--black)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>COMPANY</h4>
-            <Link href="/about" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>About Us</Link>
-            <Link href="/contact" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Contact</Link>
-            <Link href="/faq" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>FAQ</Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h4 style={{ fontWeight: 800, color: 'var(--black)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>LEGAL</h4>
-            <Link href="#" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Privacy Policy</Link>
-            <Link href="#" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Terms of Service</Link>
-            <Link href="#" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Refund Policy</Link>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h4 style={{ fontWeight: 800, color: 'var(--black)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>FOR STORES</h4>
-            <Link href="#" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Partner with us</Link>
-            <Link href="#" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Shopkeeper Login</Link>
-            <Link href="#" style={{ color: 'var(--gray-600)', fontSize: '0.85rem', textDecoration: 'none' }}>Seller Guidelines</Link>
-          </div>
-
+        {/* Platform links */}
+        <div className="footer-col">
+          <div className="footer-col-title">PLATFORM</div>
+          <a
+            href="#featSection"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('featSection'); }}
+          >
+            Features
+          </a>
+          <a
+            href="#fashionSection"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('fashionSection'); }}
+          >
+            Shop Live
+          </a>
+          <a
+            href="#resultsSection"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('resultsSection'); }}
+          >
+            Search Stores
+          </a>
+          <a
+            href="#heroSection"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('heroSection'); }}
+          >
+            Home
+          </a>
         </div>
 
-        {/* Copyright */}
-        <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: 24, textAlign: 'center', color: 'var(--gray-400)', fontSize: '0.75rem', marginTop: 16 }}>
-          © {new Date().getFullYear()} Nearbuy Inc. All rights reserved. Made with ❤️ in Vasad.
+        {/* For business links */}
+        <div className="footer-col">
+          <div className="footer-col-title">FOR BUSINESS</div>
+          <a
+            href="#"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('heroSection'); }}
+          >
+            List Your Store
+          </a>
+          <a
+            href="#"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('heroSection'); }}
+          >
+            Owner Dashboard
+          </a>
+          <a
+            href="#"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('heroSection'); }}
+          >
+            AI Inventory Scanner
+          </a>
+          <a
+            href="#"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('heroSection'); }}
+          >
+            Analytics & Reports
+          </a>
         </div>
 
+        {/* Team links */}
+        <div className="footer-col">
+          <div className="footer-col-title">TEAM</div>
+          <a
+            href="#teamSection"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('teamSection'); }}
+          >
+            About Us
+          </a>
+          <a
+            href="#teamSection"
+            className="footer-link"
+            onClick={(e) => { e.preventDefault(); scrollTo('teamSection'); }}
+          >
+            SVIT College Project
+          </a>
+          <a
+            href="mailto:tithi@nearbuy.in"
+            className="footer-link"
+          >
+            Contact Us
+          </a>
+        </div>
+
+      </div>
+
+      {/* Bottom bar */}
+      <div className="footer-bottom">
+        <div className="footer-bottom-inner">
+          <span className="footer-copy">© 2025 NEARBUY. All rights reserved.</span>
+          <div className="footer-bottom-links">
+            <a href="#" className="footer-bottom-link">Privacy</a>
+            <a href="#" className="footer-bottom-link">Terms</a>
+            <a href="#" className="footer-bottom-link">Support</a>
+          </div>
+        </div>
       </div>
     </footer>
   );

@@ -9,6 +9,7 @@ import ResultsSection from './ResultsSection';
 import SeasonalBanner from './SeasonalBanner';
 import StoreMap from './StoreMap';
 import Footer from './Footer';
+import TeamSection from './TeamSection';
 
 export default function CustomerView() {
   return (
@@ -21,7 +22,7 @@ export default function CustomerView() {
       <FashionSection />
       <StoreMap />
       <ResultsSection />
-      <Footer />
+      <TeamSection />
     </div>
   );
 }

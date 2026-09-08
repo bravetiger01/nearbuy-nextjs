@@ -61,7 +61,7 @@ export default function OwnerSidebar() {
     <aside className={`sidebar-boxy ${sidebarCollapsed ? 'collapsed' : ''} ${mobileSidebarOpen ? 'open' : ''}`}>
       <div className="sb-top">
         <div className="sb-logo-wrap">
-          <LogoMark width={110} height={28} />
+          <LogoMark width={130} height={30} />
           <span className="sb-pro-tag" style={{ background: '#F59E0B', color: '#fff', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', border: '1px solid #B45309', marginLeft: 10 }}>
             GOLD SELLER
           </span>

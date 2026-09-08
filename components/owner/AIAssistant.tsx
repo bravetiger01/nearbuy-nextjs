@@ -69,7 +69,7 @@ export default function AIAssistant() {
           {chatMessages.length === 0 ? (
             <div className="chat-empty-state">
               <div className="ce-icon">🤖</div>
-              <h3>I'm your Nearbuy AI Assistant</h3>
+              <h3>I'm your NEARBUY AI Assistant</h3>
               <p>I analyze your store's data to give you actionable insights.</p>
               
               <div className="chat-suggestions">
