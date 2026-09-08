@@ -73,7 +73,9 @@ type RawOrder = {
   discount: number | null;
   total_amount: number;
   payment_status: string;
+  notes?: string | null;
   created_at: string;
+  updated_at?: string;
 };
 type RawOrderItem = {
   id: string;
@@ -322,6 +324,17 @@ interface AppContextValue {
   riderJobs: DeliveryJob[];
   riderLoading: boolean;
   loadRiderJobs: () => Promise<void>;
+  bookRider: (params: {
+    pickupAddress: string;
+    deliveryAddress: string;
+    phone: string;
+    itemDescription: string;
+    distanceKm: number;
+    fee: number;
+    paymentMethod: 'COD' | 'UPI';
+    shopId?: string;
+  }) => Promise<{ deliveryId: string | null; error: string | null }>;
+
   reserveCtx: ReserveContext | null;
   setReserveCtx: (c: ReserveContext | null) => void;
   productStoreId: number | null;
@@ -781,17 +794,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const ordersRes = await supabase
           .from('orders')
           .select(
-            `id,status,delivery_fee,delivery_address_id,
+            `id,status,delivery_fee,delivery_address_id,notes,
              shops(id,name,address_line_1,address_line_2,city,latitude,longitude),
              addresses:delivery_address_id(label,address_line_1,city,latitude,longitude)`
           )
           .in('status', ['pending', 'confirmed', 'preparing', 'ready_for_pickup'])
+          .order('created_at', { ascending: false })
           .limit(25);
         const orders = ((ordersRes.data ?? []) as unknown as Array<{
           id: string;
           status: string;
           delivery_fee: number | null;
           delivery_address_id: string | null;
+          notes: string | null;
           shops: RiderOrderRow['shops'] | RiderOrderRow['shops'][];
           addresses: RiderOrderRow['addresses'] | RiderOrderRow['addresses'][];
         }>);
@@ -803,13 +818,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const pickupCoords: [number, number] = pickup ?? SVIT_FALLBACK;
           const dropoffCoords: [number, number] = dropoff ?? SVIT_FALLBACK;
           const distanceKm = roundDistanceKm(haversineKm(pickupCoords, dropoffCoords));
+
+          let custAddr = addr
+            ? `${addr.label ?? 'Customer'} — ${formatShopAddress(addr)}`
+            : '';
+          let custPhone = '';
+          let itemDesc = '';
+
+          if (o.notes && o.notes.includes('RIDER BOOKING')) {
+            const dropMatch = o.notes.match(/Drop:\s*([^|]+)/);
+            if (dropMatch && dropMatch[1]) custAddr = dropMatch[1].trim();
+            const phoneMatch = o.notes.match(/Phone:\s*([^|]+)/);
+            if (phoneMatch && phoneMatch[1]) custPhone = phoneMatch[1].trim();
+            const itemMatch = o.notes.match(/Item:\s*([^|]+)/);
+            if (itemMatch && itemMatch[1]) itemDesc = itemMatch[1].trim();
+          }
+
+          if (!custAddr) {
+            custAddr = 'Customer — Vasad, Gujarat';
+          }
+
           orderBased.push({
             id: o.id,
-            shopName: shop?.name ?? 'Unknown Shop',
-            shopAddress: shop ? formatShopAddress(shop) : '',
-            customerAddress: addr
-              ? `${addr.label ?? 'Customer'} — ${formatShopAddress(addr)}`
-              : 'Customer — Vasad, Gujarat',
+            shopName: shop?.name ?? 'SVIT Stationery Mart',
+            shopAddress: shop ? formatShopAddress(shop) : 'Station Road, Vasad',
+            customerAddress: custAddr,
+            customerPhone: custPhone,
+            itemDescription: itemDesc,
             distanceKm,
             fee: o.delivery_fee && o.delivery_fee > 0 ? o.delivery_fee : feeFromDistance(distanceKm),
             status: 'available',
@@ -840,7 +875,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
         });
 
-      setRiderJobs(orderBased.length > 0 ? orderBased : fallback);
+      setRiderJobs(orderBased.length > 0 ? [...orderBased, ...fallback] : fallback);
     } catch (e) {
       console.error('loadRiderJobs exception:', e);
       setRiderJobs([]);
@@ -848,6 +883,149 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setRiderLoading(false);
     }
   }, [supabase]);
+
+  // ─── Book a Rider — customer side ─────────────────────────────────────────
+  const bookRider = useCallback(async (params: {
+    pickupAddress: string;
+    deliveryAddress: string;
+    phone: string;
+    itemDescription: string;
+    distanceKm: number;
+    fee: number;
+    paymentMethod: 'COD' | 'UPI';
+    shopId?: string;
+  }): Promise<{ deliveryId: string | null; error: string | null }> => {
+    // Construct local delivery job representation
+    const fallbackId = `job-${Date.now()}`;
+    const buildJob = (id: string): DeliveryJob => ({
+      id,
+      shopName: 'SVIT Stationery Mart',
+      shopAddress: params.pickupAddress || 'Station Road, Vasad',
+      customerAddress: params.deliveryAddress,
+      customerPhone: params.phone,
+      itemDescription: params.itemDescription,
+      distanceKm: params.distanceKm,
+      fee: params.fee,
+      status: 'available',
+      shopCoords: [22.4674, 73.0763],
+      customerCoords: [22.4700, 73.0790],
+    });
+
+    if (!supabase) {
+      setRiderJobs((prev) => [buildJob(fallbackId), ...prev]);
+      return { deliveryId: fallbackId, error: null };
+    }
+
+    try {
+      // 1. Find the demo shop to use as pickup if no shopId provided
+      let pickupShopId = params.shopId;
+      if (!pickupShopId) {
+        const { data: shopRow } = await supabase
+          .from('shops')
+          .select('id')
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle();
+        pickupShopId = shopRow?.id ?? '10000000-0000-0000-0000-000000000001';
+      }
+
+      // 2. Create a minimal order row for the delivery
+      const customerId = profile?.id ?? 'a0000000-0000-0000-0000-000000000002';
+      const { data: orderRow, error: orderErr } = await supabase
+        .from('orders')
+        .insert({
+          customer_id: customerId,
+          shop_id: pickupShopId,
+          status: 'confirmed',
+          subtotal: 0,
+          delivery_fee: params.fee,
+          platform_fee: 0,
+          discount: 0,
+          total_amount: params.fee,
+          payment_status: params.paymentMethod === 'COD' ? 'pending' : 'paid',
+          notes: `RIDER BOOKING — Item: ${params.itemDescription} | Phone: ${params.phone} | Drop: ${params.deliveryAddress}`,
+        })
+        .select('id')
+        .single();
+
+      if (orderErr || !orderRow) {
+        console.error('[bookRider] order insert error:', orderErr?.message || orderErr);
+        // Sync with owner dashboard orders if current shop matches
+        if (pickupShopId === ownerShopId) {
+          const localOrder: RawOrder = {
+            id: fallbackId,
+            customer_id: customerId,
+            shop_id: pickupShopId,
+            status: 'confirmed',
+            subtotal: 0,
+            delivery_fee: params.fee,
+            platform_fee: 0,
+            discount: 0,
+            total_amount: params.fee,
+            payment_status: params.paymentMethod === 'COD' ? 'pending' : 'paid',
+            notes: `RIDER BOOKING — Item: ${params.itemDescription} | Phone: ${params.phone} | Drop: ${params.deliveryAddress}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setOwnerOrders((prev) => [localOrder, ...prev]);
+        }
+        setRiderJobs((prev) => [buildJob(fallbackId), ...prev]);
+        return { deliveryId: fallbackId, error: null };
+      }
+
+      // 3. Create the deliveries row — status 'searching_rider' so riders see it
+      const { data: deliveryRow, error: deliveryErr } = await supabase
+        .from('deliveries')
+        .insert({
+          order_id: orderRow.id,
+          pickup_shop_id: pickupShopId,
+          status: 'searching_rider',
+          estimated_distance_km: params.distanceKm,
+          estimated_duration_minutes: Math.round(params.distanceKm * 4 + 10),
+          delivery_fee: params.fee,
+        })
+        .select('id')
+        .single();
+
+      if (deliveryErr) {
+        console.error('[bookRider] delivery insert error:', deliveryErr?.message || deliveryErr);
+        setRiderJobs((prev) => [buildJob(orderRow.id), ...prev]);
+        return { deliveryId: orderRow.id, error: null };
+      }
+
+      // 4. Update local state and trigger refresh
+      const createdJobId = deliveryRow?.id || orderRow.id;
+      setRiderJobs((prev) => [buildJob(createdJobId), ...prev.filter((j) => j.id !== createdJobId)]);
+      
+      // Also sync into owner orders if applicable
+      if (pickupShopId === ownerShopId) {
+        const localOrder: RawOrder = {
+          id: orderRow.id,
+          customer_id: customerId,
+          shop_id: pickupShopId,
+          status: 'confirmed',
+          subtotal: 0,
+          delivery_fee: params.fee,
+          platform_fee: 0,
+          discount: 0,
+          total_amount: params.fee,
+          payment_status: params.paymentMethod === 'COD' ? 'pending' : 'paid',
+          notes: `RIDER BOOKING — Item: ${params.itemDescription} | Phone: ${params.phone} | Drop: ${params.deliveryAddress}`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setOwnerOrders((prev) => [localOrder, ...prev.filter((o) => o.id !== orderRow.id)]);
+      }
+
+      loadRiderJobs();
+
+      return { deliveryId: createdJobId, error: null };
+    } catch (e: any) {
+      console.error('[bookRider] exception:', e?.message || e);
+      setRiderJobs((prev) => [buildJob(fallbackId), ...prev]);
+      return { deliveryId: fallbackId, error: null };
+    }
+  }, [supabase, profile, loadRiderJobs]);
 
   const toggleTheme = useCallback(() => {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
@@ -1467,6 +1645,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       riderJobs,
       riderLoading,
       loadRiderJobs,
+      bookRider,
       reserveCtx,
       setReserveCtx,
       productStoreId,
@@ -1554,6 +1733,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       riderJobs,
       riderLoading,
       loadRiderJobs,
+      bookRider,
       reserveCtx,
       productStoreId,
       openProductModal,

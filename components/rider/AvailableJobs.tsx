@@ -100,6 +100,12 @@ export default function AvailableJobs({
             </div>
           </div>
 
+          {job.itemDescription && (
+            <div style={{ marginBottom: 12, padding: '6px 10px', background: 'var(--lav-50, #f3f0ff)', borderRadius: 6, fontSize: '0.8rem', color: 'var(--lav-900, #3b0764)', fontWeight: 600 }}>
+              📦 {job.itemDescription}
+            </div>
+          )}
+
           <button
             onClick={() => onAcceptJob(job.id)}
             style={{

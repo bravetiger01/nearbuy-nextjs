@@ -145,4 +145,6 @@ export interface DeliveryJob {
   status: 'available' | 'accepted' | 'picked_up' | 'delivered';
   shopCoords?: [number, number];
   customerCoords?: [number, number];
+  customerPhone?: string;
+  itemDescription?: string;
 }

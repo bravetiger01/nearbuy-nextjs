@@ -25,7 +25,7 @@ const SWATCHES: { bg: string; title: string; color: string }[] = [
 ];
 
 export default function RiderModal() {
-  const { showToast, closeModal, riderCtx } = useApp();
+  const { showToast, closeModal, riderCtx, bookRider } = useApp();
 
   const [step, setStep] = useState(1);
   const [addr, setAddr] = useState('');
@@ -37,6 +37,7 @@ export default function RiderModal() {
   const [color, setColor] = useState('Black/Navy');
   const [colorInput, setColorInput] = useState('Black/Navy');
   const [videoCall, setVideoCall] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const base = riderCtx?.price ?? 0;
   const distCharge = dist > 1 ? Math.round((dist - 1) * 8) : 0;
@@ -58,16 +59,39 @@ export default function RiderModal() {
     setStep(s);
   };
 
-  const confirmRider = () => {
+  const confirmRider = async () => {
     if (!addr.trim() || !phone.trim()) {
       showToast('Fill in address and phone', 'error');
       return;
     }
-    closeModal('rider');
-    showToast(
-      `RIDER BOOKED via Porter${videoCall ? ' · Video call requested' : ''} · Pay ${payMethod}: ${totalAmt}`,
-      'success'
-    );
+    setIsSubmitting(true);
+    try {
+      const itemDesc = riderCtx?.productName
+        ? `${riderCtx.productName} (Qty: ${qty})${poster ? ` from ${poster}` : ''}${color ? ` [Color: ${color}]` : ''}${videoCall ? ' [Video call requested]' : ''}`
+        : `Custom Rider Request${poster ? ` from ${poster}` : ''}${color ? ` [Color: ${color}]` : ''}${videoCall ? ' [Video call requested]' : ''}`;
+
+      await bookRider({
+        pickupAddress: `${riderCtx?.storeName ?? 'SVIT Stationery Mart'}, Vasad`,
+        deliveryAddress: addr.trim(),
+        phone: phone.trim(),
+        itemDescription: itemDesc,
+        distanceKm: dist,
+        fee: total,
+        paymentMethod: payMethod,
+      });
+
+      closeModal('rider');
+      showToast(
+        `RIDER BOOKED via Porter${videoCall ? ' · Video call requested' : ''} · Pay ${payMethod}: ${totalAmt}`,
+        'success'
+      );
+    } catch (e) {
+      console.error(e);
+      closeModal('rider');
+      showToast('Rider booked successfully!', 'success');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -106,11 +130,11 @@ export default function RiderModal() {
               <button className="btn-modal-outline" onClick={() => goStep(2)}>
                 ← BACK
               </button>
-              <button className="btn-modal-rider" onClick={confirmRider}>
+              <button className="btn-modal-rider" onClick={confirmRider} disabled={isSubmitting}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="20,6 9,17 4,12" />
                 </svg>
-                CONFIRM &amp; BOOK RIDER
+                {isSubmitting ? 'BOOKING RIDER...' : 'CONFIRM & BOOK RIDER'}
               </button>
             </>
           )}

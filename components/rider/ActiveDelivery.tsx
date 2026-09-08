@@ -176,6 +176,16 @@ export default function ActiveDelivery({
           <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>
             {isAccepted ? job.shopAddress : job.customerAddress}
           </div>
+          {job.itemDescription && (
+            <div style={{ marginTop: 8, fontSize: '0.85rem', color: '#4b5563', fontWeight: 600 }}>
+              📦 ITEM: {job.itemDescription}
+            </div>
+          )}
+          {job.customerPhone && (
+            <div style={{ marginTop: 6, fontSize: '0.85rem', color: '#1d4ed8', fontWeight: 700 }}>
+              📞 CUSTOMER PHONE: <a href={`tel:${job.customerPhone}`} style={{ color: '#1d4ed8', textDecoration: 'underline' }}>{job.customerPhone}</a>
+            </div>
+          )}
         </div>
 
         {isAccepted && (

@@ -16,8 +16,8 @@ import RiderProfile from './RiderProfile';
 import RiderLogin from './RiderLogin';
 
 export default function RiderView() {
-  const { isRider, riderJobs, riderLoading, loadRiderJobs } = useApp();
-  const [isOnline, setIsOnline] = useState(false);
+  const { isRider, riderJobs, riderLoading, loadRiderJobs, supabase } = useApp();
+  const [isOnline, setIsOnline] = useState(true);
   const [activeTab, setActiveTab] = useState<'jobs' | 'profile'>('jobs');
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [activeJob, setActiveJob] = useState<DeliveryJob | null>(null);
@@ -27,27 +27,75 @@ export default function RiderView() {
   }, [isRider, loadRiderJobs]);
 
   useEffect(() => {
+    if (!isRider || !isOnline) return;
+    const timer = setInterval(() => {
+      loadRiderJobs();
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [isRider, isOnline, loadRiderJobs]);
+
+  useEffect(() => {
     setJobs(riderJobs.filter((j) => j.id !== activeJob?.id));
   }, [riderJobs, activeJob?.id]);
 
   if (!isRider) return <RiderLogin />;
 
-  const handleAcceptJob = (jobId: string) => {
+  const handleAcceptJob = async (jobId: string) => {
     const job = jobs.find((j) => j.id === jobId);
     if (job) {
       const updatedJob = { ...job, status: 'accepted' as const };
       setActiveJob(updatedJob);
       setJobs(jobs.filter((j) => j.id !== jobId));
       setActiveTab('jobs');
+
+      if (supabase && !jobId.startsWith('shop-')) {
+        try {
+          await supabase
+            .from('deliveries')
+            .update({ status: 'rider_assigned' })
+            .eq('order_id', jobId);
+        } catch (e) {
+          console.error('[RiderView] accept error:', e);
+        }
+      }
     }
   };
 
-  const handleUpdateJobStatus = (status: DeliveryJob['status']) => {
+  const handleUpdateJobStatus = async (status: DeliveryJob['status']) => {
     if (activeJob) {
       if (status === 'delivered') {
+        if (supabase && !activeJob.id.startsWith('shop-')) {
+          try {
+            await supabase
+              .from('deliveries')
+              .update({ status: 'delivered' })
+              .eq('order_id', activeJob.id);
+            await supabase
+              .from('orders')
+              .update({ status: 'delivered', payment_status: 'paid' })
+              .eq('id', activeJob.id);
+          } catch (e) {
+            console.error('[RiderView] deliver error:', e);
+          }
+        }
         setActiveJob(null);
         setActiveTab('jobs');
+        loadRiderJobs();
       } else {
+        if (supabase && !activeJob.id.startsWith('shop-') && status === 'picked_up') {
+          try {
+            await supabase
+              .from('deliveries')
+              .update({ status: 'out_for_delivery' })
+              .eq('order_id', activeJob.id);
+            await supabase
+              .from('orders')
+              .update({ status: 'out_for_delivery' })
+              .eq('id', activeJob.id);
+          } catch (e) {
+            console.error('[RiderView] pickup error:', e);
+          }
+        }
         setActiveJob({ ...activeJob, status });
       }
     }

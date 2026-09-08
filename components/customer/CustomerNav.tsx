@@ -110,7 +110,7 @@ export default function CustomerNav() {
 
           <div className="c-nav-links">
             <a href="#featSection" className="nav-link">Features</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); switchMode('rider'); }} className="nav-link">Book Rider</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); openModal('rider'); }} className="nav-link">Book Rider</a>
             <a href="#resultsSection" className="nav-link">Search</a>
             <a href="/about" className="nav-link">About</a>
           </div>
@@ -209,7 +209,7 @@ export default function CustomerNav() {
           <button
             className="user-chip"
             style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
-            onClick={() => openModal('rider')}
+            onClick={() => switchMode('rider')}
           >
             <TruckIcon size={13} />
             RIDER
