@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
-import { BellIcon, MoonIcon, StoreIcon, TruckIcon, UserIcon } from '../../lib/icons';
+import { BellIcon, LogoMark, MoonIcon, StoreIcon, TruckIcon, UserIcon } from '../../lib/icons';
 
 function ReservationTimer({ time }: { time: string }) {
   const [remaining, setRemaining] = useState('');
@@ -26,10 +26,6 @@ function ReservationTimer({ time }: { time: string }) {
 export default function CustomerNav() {
   const { toggleTheme, openModal, loggedIn, isOwner, switchMode, reservations = [] } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const pendingCount = reservations.filter(r => r.status === 'pending').length;
-  const totalBadge = isOwner ? pendingCount : 3;
 
   return (
     <>
@@ -50,40 +46,12 @@ export default function CustomerNav() {
           <a href="#featSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
             <span className="ndl-icon">✦</span> Features
           </a>
-          <a href="#" className="nav-drawer-link" onClick={(e) => { e.preventDefault(); switchMode('rider'); setDrawerOpen(false); }}>
-            <span className="ndl-icon">▶</span> Book Rider
+          <a href="#fashionSection" className="nav-link">
+            Shop Live
           </a>
-          <a href="#resultsSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
-            <span className="ndl-icon">◎</span> Search
+          <a href="#resultsSection" className="nav-link">
+            Search
           </a>
-          <a href="/about" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
-            <span className="ndl-icon">◈</span> About
-          </a>
-        </nav>
-        <div className="nav-drawer-footer">
-          {isOwner ? (
-            <button className="drawer-cta-btn owner" onClick={() => { switchMode('owner'); setDrawerOpen(false); }}>
-              <StoreIcon size={15} /> Go to Dashboard
-            </button>
-          ) : (
-            <>
-              <button
-                className="drawer-cta-btn"
-                onClick={() => { openModal('login'); setDrawerOpen(false); }}
-              >
-                <StoreIcon size={15} />
-                Shop Owner Login
-              </button>
-              <button
-                className="drawer-cta-btn"
-                style={{ marginTop: 8, background: 'var(--lav-500)', borderColor: 'var(--lav-700)' }}
-                onClick={() => { switchMode('rider'); setDrawerOpen(false); }}
-              >
-                <TruckIcon size={15} />
-                Rider Login
-              </button>
-            </>
-          )}
         </div>
       </div>
 
@@ -185,34 +153,37 @@ export default function CustomerNav() {
               )}
             </div>
 
-            {isOwner ? (
-              <button className="user-chip" style={{ background: 'var(--lav-500)', borderColor: 'var(--lav-700)', cursor: 'pointer' }} onClick={() => switchMode('owner')}>
-                <StoreIcon size={14} />
-                <span className="chip-txt">DASHBOARD</span>
-              </button>
-            ) : (
-              <button className="user-chip" style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => openModal('login')}>
-                <StoreIcon size={13} />
-                <span className="chip-txt">SHOP OWNER</span>
-              </button>
-            )}
-
-            <button className="user-chip" title="Open Rider app" style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => switchMode('rider')}>
-              <TruckIcon size={13} />
-              <span className="chip-txt">RIDER</span>
-            </button>
-
-            <div
+          {/* Shop Owner Login Button */}
+          {isOwner ? (
+            <button
               className="user-chip"
-              style={{ cursor: 'pointer', background: loggedIn ? 'var(--lav-700)' : undefined }}
-              onClick={() => (!loggedIn ? openModal('login') : undefined)}
+              style={{ background: 'var(--lav-500)', borderColor: 'var(--lav-700)', cursor: 'pointer' }}
+              onClick={() => switchMode('owner')}
             >
-              <UserIcon size={14} />
-              <span className="chip-txt">{loggedIn ? 'YOU' : 'LOGIN'}</span>
-            </div>
+              <StoreIcon size={14} />
+              DASHBOARD
+            </button>
+          ) : (
+            <button
+              className="user-chip"
+              style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => openModal('login')}
+            >
+              <StoreIcon size={13} />
+              SHOP OWNER LOGIN
+            </button>
+          )}
+
+          <div
+            className="user-chip"
+            style={{ cursor: 'pointer', background: loggedIn ? 'var(--lav-700)' : undefined }}
+            onClick={() => (!loggedIn ? openModal('login') : undefined)}
+          >
+            <UserIcon size={14} />
+            {loggedIn ? 'YOU' : 'LOGIN'}
           </div>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }

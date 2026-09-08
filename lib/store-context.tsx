@@ -21,6 +21,8 @@ import {
   createOwnerInventory,
   LANG_KEYWORDS,
 } from './data';
+import { parseMultilingualQuery, type TranslationMatch } from './multilingual';
+import { speakSearchResult, stopSpeaking } from './speech-synthesis';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createClient as createSupabaseClient } from './supabase/client';
 import type {
@@ -246,10 +248,14 @@ interface AppContextValue {
   setCurrentResultView: (v: 'list' | 'map') => void;
   sortBy: SortBy;
   setSortBy: (v: SortBy) => void;
-  doSearch: (q?: string) => void;
-  quickSearch: (term: string) => void;
+  doSearch: (q?: string, options?: { isVoice?: boolean; autoSpeak?: boolean }) => void;
+  quickSearch: (term: string, options?: { isVoice?: boolean; autoSpeak?: boolean }) => void;
   aiRecs: string[];
   resultsRef: React.RefObject<HTMLDivElement | null>;
+  activeTranslation: TranslationMatch | null;
+  isSpeaking: boolean;
+  speakCurrentResult: () => void;
+  stopVoice: () => void;
 
   lang: string;
   setLang: (v: string) => void;
@@ -421,6 +427,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentResultView, setCurrentResultView] = useState<'list' | 'map'>('list');
   const [sortBy, setSortBy] = useState<SortBy>('distance');
   const [aiRecs, setAiRecs] = useState<string[]>([]);
+  const [activeTranslation, setActiveTranslation] = useState<TranslationMatch | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const [lang, setLang] = useState('en-US');
@@ -834,6 +842,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setActiveModal((cur) => (cur === m ? null : cur));
   }, []);
 
+  const speakCurrentResult = useCallback(() => {
+    if (!currentQuery && !activeTranslation) return;
+    const lowestPrice = rawResults.reduce((min, s) => {
+      const pMin = s.matchedProducts.reduce((m, p) => Math.min(m, p.price), Infinity);
+      return Math.min(min, pMin);
+    }, Infinity);
+
+    setIsSpeaking(true);
+    speakSearchResult({
+      translation: activeTranslation,
+      productName: activeTranslation?.resolvedTerm ?? currentQuery,
+      storeCount: rawResults.length,
+      lowestPrice: lowestPrice !== Infinity ? lowestPrice : undefined,
+      lang,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+  }, [currentQuery, activeTranslation, rawResults, lang]);
+
+  const stopVoice = useCallback(() => {
+    stopSpeaking();
+    setIsSpeaking(false);
+  }, []);
+
   const handleSearchInput = useCallback((value: string) => {
     setSearchTerm(value);
     const rawQ = value.trim();
@@ -841,10 +874,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSuggestions([]);
       return;
     }
-    const ql = rawQ.toLowerCase();
-    const mapped = LANG_KEYWORDS[ql] || ql;
+    const translation = parseMultilingualQuery(rawQ, lang);
+    const searchTarget = (translation ? translation.resolvedTerm : rawQ).toLowerCase();
+    const mapped = LANG_KEYWORDS[searchTarget] || searchTarget;
 
     const all: string[] = [];
+    if (translation) {
+      all.push(`${translation.matchedWord} → ${translation.resolvedTerm}`);
+    }
     STORES.forEach((s) =>
       s.products.forEach((p) => {
         if (p.name.toLowerCase().includes(mapped) && !all.includes(p.name)) all.push(p.name);
@@ -854,21 +891,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (p.listed && p.name.toLowerCase().includes(mapped) && !all.includes(p.name)) all.push(p.name);
     });
     setSuggestions(all.length ? all.slice(0, 6) : []);
-  }, [ownerInventory]);
+  }, [ownerInventory, lang]);
 
   const doSearch = useCallback(
-    (q?: string) => {
+    (q?: string, options?: { isVoice?: boolean; autoSpeak?: boolean }) => {
       const query = (q ?? searchTerm).trim();
       if (!query) {
         showToast('Enter a product to search', 'info');
         return;
       }
-      const ql = query.toLowerCase();
+
+      // Check multilingual dictionary (Gujarati / Hindi / English)
+      const translation = parseMultilingualQuery(query, lang);
+      setActiveTranslation(translation);
+
+      const effectiveTerm = translation ? translation.resolvedTerm : query;
+      const ql = effectiveTerm.toLowerCase();
       const mapped = LANG_KEYWORDS[ql] || ql;
+
       setCurrentQuery(query);
       setSuggestions([]);
+
       const results: StoreResult[] = STORES.map((store) => {
-        // Mock injection of owner products if they belong to this mock store
         let dynamicProducts = store.products;
         if (store.name === 'SVIT Stationery Mart' && ownerInventory.length > 0) {
           const ownerListed = ownerInventory.filter(p => p.listed).map(p => ({
@@ -879,7 +923,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             image: p.image,
             description: p.description
           }));
-          // Merge avoiding duplicates by name
           const merged = [...dynamicProducts];
           ownerListed.forEach(op => {
             if (!merged.find(m => m.name === op.name)) merged.push(op);
@@ -887,7 +930,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
           dynamicProducts = merged;
         }
 
-        const matches = dynamicProducts.filter((p) => p.name.toLowerCase().includes(mapped) || p.category.toLowerCase().includes(mapped));
+        const matches = dynamicProducts.filter((p) =>
+          p.name.toLowerCase().includes(mapped) ||
+          p.category.toLowerCase().includes(mapped) ||
+          (translation && (
+            p.name.toLowerCase().includes(translation.resolvedTerm.toLowerCase()) ||
+            p.category.toLowerCase().includes(translation.resolvedTerm.toLowerCase())
+          ))
+        );
         return { ...store, products: dynamicProducts, matchedProducts: matches };
       }).filter((s) => s.matchedProducts.length > 0);
 
@@ -896,25 +946,57 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       let recs: string[] = [];
       for (const [key, val] of Object.entries(AI_RECS)) {
-        if (ql.includes(key)) {
+        if (ql.includes(key) || (translation && translation.resolvedTerm.toLowerCase().includes(key))) {
           recs = val;
           break;
         }
       }
       setAiRecs(recs);
 
+      // Log to database searches table if Supabase is connected (context.md / database.md)
+      if (supabase) {
+        supabase.from('searches').insert({
+          search_type: options?.isVoice ? 'voice' : 'text',
+          query_text: query,
+          ai_detected_product: translation?.resolvedTerm ?? null,
+          customer_id: session?.user?.id ?? null,
+        }).then(({ error }) => {
+          if (error) console.log('searches log info:', error.message);
+        });
+      }
+
+      // Voice output: Say result if requested or voice search
+      if (options?.autoSpeak || options?.isVoice) {
+        const lowestPrice = results.reduce((min, s) => {
+          const pMin = s.matchedProducts.reduce((m, p) => Math.min(m, p.price), Infinity);
+          return Math.min(min, pMin);
+        }, Infinity);
+
+        setIsSpeaking(true);
+        speakSearchResult({
+          translation,
+          productName: translation?.resolvedTerm ?? query,
+          storeCount: results.length,
+          lowestPrice: lowestPrice !== Infinity ? lowestPrice : undefined,
+          lang,
+          onStart: () => setIsSpeaking(true),
+          onEnd: () => setIsSpeaking(false),
+          onError: () => setIsSpeaking(false),
+        });
+      }
+
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     },
-    [searchTerm, showToast]
+    [searchTerm, showToast, lang, ownerInventory, supabase, session]
   );
 
   const quickSearch = useCallback(
-    (term: string) => {
+    (term: string, options?: { isVoice?: boolean; autoSpeak?: boolean }) => {
       setSearchTerm(term);
       setSuggestions([]);
-      doSearch(term);
+      doSearch(term, options);
     },
     [doSearch]
   );
@@ -1306,6 +1388,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       quickSearch,
       aiRecs,
       resultsRef,
+      activeTranslation,
+      isSpeaking,
+      speakCurrentResult,
+      stopVoice,
       lang,
       setLang,
       supabase,
@@ -1392,6 +1478,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       doSearch,
       quickSearch,
       aiRecs,
+      activeTranslation,
+      isSpeaking,
+      speakCurrentResult,
+      stopVoice,
       lang,
       supabase,
       session,

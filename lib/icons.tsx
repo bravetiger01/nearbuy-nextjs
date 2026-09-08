@@ -231,18 +231,19 @@ export const BarChartIcon = (p: IconProps) => (
   </Icon>
 );
 
-export const LogoMark = ({ width = 142, height = 34 }: { width?: number; height?: number }) => (
-  <svg width={width} height={height} viewBox="0 0 142 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="1" y="1" width="32" height="32" fill="#8B5CF6" stroke="#0A0A0A" strokeWidth="2" />
-    <rect x="6" y="6" width="22" height="14" fill="#FFFFFF" />
-    <rect x="14" y="20" width="4" height="9" fill="#FFFFFF" />
-    <circle cx="17" cy="13" r="4" fill="#8B5CF6" stroke="#0A0A0A" strokeWidth="1.5" />
-    <circle cx="17" cy="13" r="1.5" fill="#FFFFFF" />
-    <text x="42" y="22" fontFamily="'Space Grotesk', sans-serif" fontWeight="800" fontSize="18" fill="#0A0A0A" letterSpacing="-0.8">
-      near
+export const LogoMark = ({ width = 152, height = 34 }: { width?: number; height?: number }) => (
+  <svg width={width} height={height} viewBox="0 0 152 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Clean location-pin icon mark — black & white, no purple */}
+    <rect x="1" y="1" width="32" height="32" fill="#0A0A0A" stroke="#0A0A0A" strokeWidth="2" />
+    {/* Pin shape */}
+    <path d="M17 7C13.686 7 11 9.686 11 13C11 17.5 17 27 17 27C17 27 23 17.5 23 13C23 9.686 20.314 7 17 7Z" fill="#FFFFFF" />
+    <circle cx="17" cy="13" r="2.5" fill="#0A0A0A" />
+    {/* NEARBUY wordmark — all black, caps */}
+    <text x="42" y="23" fontFamily="'Space Grotesk', sans-serif" fontWeight="800" fontSize="17" fill="#0A0A0A" letterSpacing="-0.5">
+      NEAR
     </text>
-    <text x="90" y="22" fontFamily="'Space Grotesk', sans-serif" fontWeight="800" fontSize="18" fill="#8B5CF6" letterSpacing="-0.8">
-      buy
+    <text x="96" y="23" fontFamily="'Space Grotesk', sans-serif" fontWeight="800" fontSize="17" fill="#0A0A0A" letterSpacing="-0.5">
+      BUY
     </text>
   </svg>
 );

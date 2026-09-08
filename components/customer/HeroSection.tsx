@@ -46,7 +46,7 @@ export default function HeroSection() {
       <div className="geo-line geo-line-h" />
 
       <div className="hero-inner-centered" style={{ position: 'relative', zIndex: 2 }}>
-        
+
         {/* Official logo with shine */}
         <div className="hero-logo-wrap">
           <div className="hero-logo-glow" />
@@ -64,7 +64,7 @@ export default function HeroSection() {
           </div>
           <div className="hero-logo-badge">
             <span className="hero-label-dot" />
-            LIVE INVENTORY · 2 KM RADIUS
+            NEARBUY · OFFLINE STORES · LIVE INVENTORY
           </div>
         </div>
 
@@ -72,7 +72,7 @@ export default function HeroSection() {
         <h1 className="hero-title-centered">
           Find Any Product
           <br />
-          <span className="title-accent">Nearby</span>
+          <span className="title-accent">Nearbuy</span>
           {' '}— Instantly
         </h1>
         <p className="hero-sub-centered">
@@ -107,7 +107,13 @@ export default function HeroSection() {
               <input
                 type="text"
                 className="search-inp"
-                placeholder="Search notebooks, medicine, charger…"
+                placeholder={
+                  lang === 'gu-IN'
+                    ? 'ચોપડી, દવા, પેન શોધો… (Try "chopdi")'
+                    : lang === 'hi-IN'
+                    ? 'किताब, दवाई, पेन खोजें… (Try "kitab")'
+                    : 'Search notebooks, medicine, charger…'
+                }
                 value={searchTerm}
                 autoComplete="off"
                 onChange={(e) => handleSearchInput(e.target.value)}

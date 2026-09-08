@@ -13,7 +13,7 @@ export default function TeamSection() {
           <div className="section-eyebrow" style={{ border: 'none', padding: 0, display: 'block' }}>
             MEET THE CREATORS
           </div>
-          <h2 className="section-heading">The NearBuy Team</h2>
+          <h2 className="section-heading">The NEARBUY Team</h2>
         </div>
         <div className="team-grid">
           {TEAM.map((m) => (
