@@ -26,6 +26,10 @@ function ReservationTimer({ time }: { time: string }) {
 export default function CustomerNav() {
   const { toggleTheme, openModal, loggedIn, isOwner, switchMode, reservations = [] } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const pendingCount = reservations.filter((r) => r.status === 'pending').length;
+  const totalBadge = isOwner ? pendingCount : 3;
 
   return (
     <>
@@ -38,7 +42,7 @@ export default function CustomerNav() {
       <div className={`nav-drawer ${drawerOpen ? 'open' : ''}`}>
         <div className="nav-drawer-header">
           <div className="nav-drawer-logo">
-            <Image src="/brand/nearbuy_logo.jpg" alt="nearbuy" width={40} height={40} className="drawer-logo-img" style={{ mixBlendMode: 'multiply' }} />
+            <Image src="/logo.jpg" alt="nearbuy" width={40} height={40} className="drawer-logo-img" style={{ mixBlendMode: 'multiply' }} />
           </div>
           <button className="nav-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close menu">✕</button>
         </div>
@@ -48,19 +52,38 @@ export default function CustomerNav() {
           </a>
           <button
             type="button"
-            className="nav-link"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}
-            onClick={() => openModal('rider')}
+            className="nav-drawer-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', textAlign: 'left', width: '100%' }}
+            onClick={() => { setDrawerOpen(false); openModal('rider'); }}
           >
-            Book Rider
+            <span className="ndl-icon">🚚</span> Book Rider
           </button>
-          <a href="#resultsSection" className="nav-link">
-            Search
+          <a href="#resultsSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
+            <span className="ndl-icon">🔍</span> Search
           </a>
-          <a href="#teamSection" className="nav-link">
-            About
+          <a href="/about" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
+            <span className="ndl-icon">ℹ</span> About
           </a>
-        </div>
+          {isOwner ? (
+            <button
+              type="button"
+              className="nav-drawer-link"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', textAlign: 'left', width: '100%' }}
+              onClick={() => { setDrawerOpen(false); switchMode('owner'); }}
+            >
+              <span className="ndl-icon">🏪</span> Dashboard
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="nav-drawer-link"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', textAlign: 'left', width: '100%' }}
+              onClick={() => { setDrawerOpen(false); openModal('login'); }}
+            >
+              <span className="ndl-icon">🏪</span> Shop Owner
+            </button>
+          )}
+        </nav>
       </div>
 
       {/* Main nav */}
@@ -73,7 +96,7 @@ export default function CustomerNav() {
           <a href="#" className="nb-logo-wrap">
             <div className="nb-logo-shine-wrap">
               <Image
-                src="/brand/nearbuy_logo.jpg"
+                src="/logo.jpg"
                 alt="nearbuy — find anything nearby"
                 width={40}
                 height={40}
@@ -203,5 +226,6 @@ export default function CustomerNav() {
         </div>
       </div>
     </nav>
-  );
+  </>
+);
 }

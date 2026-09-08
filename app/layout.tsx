@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'NEARBUY — Find any product at nearby offline stores',
   description:
     'NEARBUY: Real-time product discovery for offline stores with live inventory, reservations, rider delivery and a shop-owner dashboard. Find anything near you instantly.',
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export const viewport: Viewport = {

@@ -100,7 +100,7 @@ export default function RiderLogin() {
           <div style={{ border: '4px solid #000', backgroundColor: '#fff', boxShadow: '6px 6px 0px #000', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '4px solid #000', paddingBottom: '12px', alignItems: 'center' }}>
               <div style={{ width: 50, height: 50, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <img src="/brand/nearbuy_logo.jpg" alt="NEARBUY" style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                <img src="/logo.jpg" alt="NEARBUY" style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
               </div>
               <div style={{ fontWeight: 800 }}>DISPATCH BEACON<br/>AUTHENTICATION</div>
               <div style={{ backgroundColor: '#9b8fe3', border: '2px solid #000', padding: '4px 8px', fontSize: '0.75rem', fontWeight: 800 }}>
