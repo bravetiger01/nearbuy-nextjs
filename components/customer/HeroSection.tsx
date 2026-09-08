@@ -23,7 +23,7 @@ export default function HeroSection() {
           <div className="hero-logo-glow" />
           <div className="hero-logo-shine-container">
             <Image
-              src="/logo.jpg"
+              src="/brand/nearbuy_logo.jpg"
               alt="nearbuy — find anything nearby"
               width={56}
               height={56}

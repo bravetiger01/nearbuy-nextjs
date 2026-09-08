@@ -28,14 +28,23 @@ export default function CustomerNav() {
   const [notifOpen, setNotifOpen] = useState(false);
 
   return (
-    <nav className="c-nav" id="cNav">
-      <div className="c-nav-inner">
-        <a href="#" className="nb-logo">
-          <LogoMark />
-        </a>
-        <div className="c-nav-links">
-          <a href="#featSection" className="nav-link">
-            Features
+    <>
+      {/* Drawer overlay */}
+      {drawerOpen && (
+        <div className="nav-drawer-overlay" onClick={() => setDrawerOpen(false)} />
+      )}
+
+      {/* Mobile slide drawer */}
+      <div className={`nav-drawer ${drawerOpen ? 'open' : ''}`}>
+        <div className="nav-drawer-header">
+          <div className="nav-drawer-logo">
+            <Image src="/brand/nearbuy_logo.jpg" alt="nearbuy" width={40} height={40} className="drawer-logo-img" style={{ mixBlendMode: 'multiply' }} />
+          </div>
+          <button className="nav-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close menu">✕</button>
+        </div>
+        <nav className="nav-drawer-links">
+          <a href="#featSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
+            <span className="ndl-icon">✦</span> Features
           </a>
           <button
             type="button"
@@ -52,44 +61,105 @@ export default function CustomerNav() {
             About
           </a>
         </div>
-        <div className="c-nav-right">
-          <button className="icon-btn" title="Toggle Dark Mode" onClick={toggleTheme}>
-            <MoonIcon size={16} />
+      </div>
+
+      {/* Main nav */}
+      <nav className="c-nav" id="cNav">
+        <div className="c-nav-inner">
+          <button className="nav-hamburger" aria-label="Open menu" onClick={() => setDrawerOpen(true)}>
+            <span /><span /><span />
           </button>
-          <div style={{ position: 'relative' }}>
-            <button className="icon-btn" title="Notifications" onClick={() => setNotifOpen((o) => !o)}>
-              <BellIcon size={16} />
-              <span className="notif-badge">3</span>
-            </button>
-            {notifOpen && (
-              <div className="notif-drop">
-                <div className="notif-item unread">
-                  <div className="nd-dot" />
-                  <div>
-                    <strong>Reservation confirmed</strong> at SVIT Stationery Mart
-                    <br />
-                    <small>2 min ago</small>
-                  </div>
-                </div>
-                <div className="notif-item unread">
-                  <div className="nd-dot" />
-                  <div>
-                    <strong>Rider picked up</strong> your Casio Calculator order
-                    <br />
-                    <small>15 min ago</small>
-                  </div>
-                </div>
-                <div className="notif-item">
-                  <div className="nd-dot read" />
-                  <div>
-                    <strong>New store opened</strong> near you: New Student Zone
-                    <br />
-                    <small>1 hr ago</small>
-                  </div>
-                </div>
-              </div>
-            )}
+
+          <a href="#" className="nb-logo-wrap">
+            <div className="nb-logo-shine-wrap">
+              <Image
+                src="/brand/nearbuy_logo.jpg"
+                alt="nearbuy — find anything nearby"
+                width={40}
+                height={40}
+                className="nb-logo-img"
+                style={{ mixBlendMode: 'multiply' }}
+                priority
+              />
+              <div className="nb-logo-shimmer" />
+            </div>
+          </a>
+
+          <div className="c-nav-links">
+            <a href="#featSection" className="nav-link">Features</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); switchMode('rider'); }} className="nav-link">Book Rider</a>
+            <a href="#resultsSection" className="nav-link">Search</a>
+            <a href="/about" className="nav-link">About</a>
           </div>
+
+          <div className="c-nav-right">
+            <button className="icon-btn" title="Toggle Dark Mode" onClick={toggleTheme}>
+              <MoonIcon size={16} />
+            </button>
+
+            {/* Notifications */}
+            <div style={{ position: 'relative' }}>
+              <button className="icon-btn" title="Notifications" onClick={() => setNotifOpen(o => !o)}>
+                <BellIcon size={16} />
+                {totalBadge > 0 && (
+                  <span className="notif-badge" style={{ animation: 'ping 1.5s ease-in-out infinite' }}>
+                    {totalBadge}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="notif-drop">
+                  {isOwner && reservations.length > 0 ? (
+                    <>
+                      <div style={{ padding: '8px 12px', fontSize: '0.7rem', fontWeight: 800, color: 'var(--gray-500)', letterSpacing: '0.08em', borderBottom: '1px solid var(--gray-100)' }}>
+                        RESERVATION ALERTS
+                      </div>
+                      {reservations.slice(0, 5).map(r => (
+                        <div key={r.id} className={`notif-item ${r.status === 'pending' ? 'unread' : ''}`}>
+                          <div className="nd-dot" style={{ background: r.status === 'pending' ? '#f59e0b' : '#10b981' }} />
+                          <div>
+                            <strong>🛒 {r.product}</strong><br />
+                            <small style={{ color: 'var(--gray-500)' }}>
+                              {r.customer} · Qty: {r.qty} ·{' '}
+                              <span style={{
+                                padding: '1px 6px', borderRadius: '4px',
+                                background: r.status === 'pending' ? '#fef3c7' : '#d1fae5',
+                                color: r.status === 'pending' ? '#92400e' : '#065f46',
+                                fontWeight: 700, fontSize: '0.65rem',
+                              }}>
+                                {r.status.toUpperCase()}
+                              </span>
+                            </small><br />
+                            {r.status === 'pending' && <ReservationTimer time={r.time} />}
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => { switchMode('owner'); setNotifOpen(false); }}
+                        style={{ width: '100%', padding: '10px', background: 'var(--lav-50)', border: 'none', fontSize: '0.8rem', fontWeight: 700, color: 'var(--lav-700)', cursor: 'pointer', borderTop: '1px solid var(--gray-100)' }}
+                      >
+                        View All in Dashboard →
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="notif-item unread">
+                        <div className="nd-dot" />
+                        <div><strong>Reservation confirmed</strong> at SVIT Stationery Mart<br /><small>2 min ago</small></div>
+                      </div>
+                      <div className="notif-item unread">
+                        <div className="nd-dot" />
+                        <div><strong>Rider picked up</strong> your Casio Calculator order<br /><small>15 min ago</small></div>
+                      </div>
+                      <div className="notif-item">
+                        <div className="nd-dot read" />
+                        <div><strong>New store opened</strong> near you: New Student Zone<br /><small>1 hr ago</small></div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
           {/* Shop Owner Login Button */}
           {isOwner ? (
