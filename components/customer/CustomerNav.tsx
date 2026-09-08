@@ -26,6 +26,10 @@ function ReservationTimer({ time }: { time: string }) {
 export default function CustomerNav() {
   const { toggleTheme, openModal, loggedIn, isOwner, switchMode, reservations = [] } = useApp();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const pendingCount = reservations.filter(r => r.status === 'pending').length;
+  const totalBadge = isOwner ? pendingCount : 3;
 
   return (
     <>
@@ -52,7 +56,7 @@ export default function CustomerNav() {
           <a href="#resultsSection" className="nav-link">
             Search
           </a>
-        </div>
+        </nav>
       </div>
 
       {/* Main nav */}
@@ -185,5 +189,6 @@ export default function CustomerNav() {
         </div>
       </div>
     </nav>
+    </>
   );
 }

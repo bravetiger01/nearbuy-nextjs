@@ -279,3 +279,9 @@ export const BarcodeIcon = (p: IconProps) => (
     <path d="M21 5v14" />
   </Icon>
 );
+
+export const CheckIcon = (p: IconProps) => (
+  <Icon {...p} strokeWidth={3}>
+    <polyline points="20 6 9 17 4 12" />
+  </Icon>
+);
