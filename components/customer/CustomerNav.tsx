@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useApp } from '../../lib/store-context';
-import { BellIcon, MoonIcon, StoreIcon, TruckIcon, UserIcon } from '../../lib/icons';
+import { BellIcon, LogoMark, MoonIcon, StoreIcon, TruckIcon, UserIcon } from '../../lib/icons';
 
 function ReservationTimer({ time }: { time: string }) {
   const [remaining, setRemaining] = useState('');
