@@ -9,12 +9,33 @@ export default function HeroSection() {
   const { searchTerm, handleSearchInput, doSearch, quickSearch, suggestions, openModal } = useApp();
 
   return (
-    <section style={{ backgroundColor: '#f5f0e6', paddingBottom: '32px' }}>
-      
-      {/* Ticker Bar */}
-      <div style={{ backgroundColor: '#ffef00', borderBottom: '4px solid #000', padding: '8px 0', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-        <div style={{ display: 'inline-block', animation: 'ticker 15s linear infinite', fontWeight: 900, fontSize: '0.8rem', letterSpacing: '0.05em' }}>
-          HYPERLOCAL RADAR V4.2 // 4,821 VERIFIED MERCHANTS ONLINE // ESCROW LOCK ACTIVE // COURIER PING: 18ms
+    <section className="hero-section" id="heroSection">
+      {/* Geometric decorations */}
+      <div className="geo-dec geo-tl" />
+      <div className="geo-dec geo-tr" />
+      <div className="geo-dec geo-br" />
+      <div className="geo-line geo-line-h" />
+
+      <div className="hero-inner-centered">
+        {/* Official logo with shine */}
+        <div className="hero-logo-wrap">
+          <div className="hero-logo-glow" />
+          <div className="hero-logo-shine-container">
+            <Image
+              src="/logo.jpg"
+              alt="nearbuy — find anything nearby"
+              width={56}
+              height={56}
+              className="hero-logo-img"
+              style={{ mixBlendMode: 'multiply' }}
+              priority
+            />
+            <div className="hero-logo-shimmer-bar" />
+          </div>
+          <div className="hero-logo-badge">
+            <span className="hero-label-dot" />
+            LIVE INVENTORY · 2 KM RADIUS
+          </div>
         </div>
       </div>
 

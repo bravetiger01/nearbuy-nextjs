@@ -95,7 +95,7 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         position: 'relative',
       }}>
         <Image
-          src="/brand/nearbuy_logo.jpg"
+          src="/logo.jpg"
           alt="nearbuy"
           width={100}
           height={100}
