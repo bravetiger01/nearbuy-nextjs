@@ -731,10 +731,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Fetch business data when ownerShopId is set
+  // Fetch business data + inventory when ownerShopId is set
   useEffect(() => {
     if (ownerShopId && supabase) {
       fetchOwnerBusinessData(supabase, ownerShopId);
+      // Also fetch inventory by shop ID directly (covers demo login path)
+      setInventoryLoading(true);
+      supabase
+        .from('shop_products')
+        .select(`
+          id, shop_id, product_id, price, mrp, quantity,
+          low_stock_threshold, discount_percentage, is_available,
+          products ( id, name, description, brand, sku, image_url )
+        `)
+        .eq('shop_id', ownerShopId)
+        .order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          setInventoryLoading(false);
+          if (error) { console.error('inventory fetch:', error.message); return; }
+          if (data) setOwnerInventory((data as unknown as RawShopProduct[]).map(rawToStoreProduct));
+        });
     }
   }, [ownerShopId, supabase, fetchOwnerBusinessData]);
 
@@ -1290,7 +1306,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProfile(mockProfile);
     setLoggedIn(true);
     setIsOwner(isShopOwner);
-    if (isShopOwner) setMode('owner');
+    if (isShopOwner) {
+      setMode('owner');
+      // Set the hardcoded demo shop ID — this triggers the useEffect that calls
+      // fetchOwnerBusinessData, loading all orders/analytics/P&L from Supabase.
+      setOwnerShopId('10000000-0000-0000-0000-000000000001');
+    }
   }, []);
 
   const riderLogout = useCallback(() => {

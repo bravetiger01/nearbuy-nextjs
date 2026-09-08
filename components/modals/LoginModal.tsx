@@ -35,32 +35,20 @@ export default function LoginModal() {
     const isDemoAdmin = (emailNorm === 'admin@gmail.com' || emailNorm === 'admin@demo.com') && password === 'admin123';
     const isDemoCustomer = (emailNorm === 'customer@gmail.com' || emailNorm === 'customer@demo.com') && password === 'customer123';
 
-    // Fast-path demo login
-    if (isDemoAdmin || isDemoCustomer) {
-      const demoRole = isDemoAdmin ? 'shop_owner' : 'customer';
-      if (demoRole !== expectedRole) {
-        showToast(
-          expectedRole === 'shop_owner'
-            ? 'This account is not a Shop Owner'
-            : 'This account is not a Customer account',
-          'error'
-        );
-        return;
-      }
-      loginDemo(demoRole);
-      if (expectedRole === 'shop_owner') switchMode('owner');
-      showToast(
-        expectedRole === 'shop_owner'
-          ? 'Welcome! Shop Owner Dashboard loaded.'
-          : 'Logged in as Customer!',
-        'success'
-      );
-      closeModal('login');
-      return;
-    }
 
     if (!supabase) {
-      showToast('Supabase is not configured. Using demo mode.', 'error');
+      // No supabase — use local demo mode for known demo accounts
+      if (isDemoAdmin && expectedRole === 'shop_owner') {
+        loginDemo('shop_owner'); switchMode('owner');
+        showToast('Welcome! Shop Owner Dashboard loaded. (offline demo)', 'success');
+        closeModal('login'); return;
+      }
+      if (isDemoCustomer && expectedRole === 'customer') {
+        loginDemo('customer');
+        showToast('Logged in as Customer! (offline demo)', 'success');
+        closeModal('login'); return;
+      }
+      showToast('Supabase is not configured. Use demo credentials.', 'error');
       return;
     }
 
@@ -79,22 +67,18 @@ export default function LoginModal() {
       const errCode = anyErr?.code;
       console.error('[NearBuy] signInWithPassword error:', errStatus, errMessage, errCode, error);
 
-      // Demo fallback if GoTrue schema error
-      const isGoTrueDown =
-        errStatus === 500 || errMessage.toLowerCase().includes('database error');
-
-      if (isGoTrueDown && (isDemoAdmin || isDemoCustomer)) {
+      // Demo fallback if GoTrue schema error or any Supabase error for known demo accounts
+      const isGoTrueDown = errStatus === 500 || errMessage.toLowerCase().includes('database error');
+      if ((isGoTrueDown || true) && (isDemoAdmin || isDemoCustomer)) {
         const demoRole = isDemoAdmin ? 'shop_owner' : 'customer';
+        if (demoRole !== expectedRole) {
+          showToast(expectedRole === 'shop_owner' ? 'This account is not a Shop Owner' : 'This account is not a Customer account', 'error');
+          return;
+        }
         loginDemo(demoRole);
         if (expectedRole === 'shop_owner') switchMode('owner');
-        showToast(
-          expectedRole === 'shop_owner'
-            ? 'Welcome! Shop Owner Dashboard loaded.'
-            : 'Logged in as Customer!',
-          'success'
-        );
-        closeModal('login');
-        return;
+        showToast(expectedRole === 'shop_owner' ? 'Welcome! Shop Owner Dashboard loaded.' : 'Logged in as Customer!', 'success');
+        closeModal('login'); return;
       }
 
       const detail = [errMessage, errCode && `code: ${errCode}`, errStatus && `status: ${errStatus}`]
