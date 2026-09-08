@@ -188,7 +188,7 @@ export default function CustomerNav() {
           {isOwner ? (
             <button
               className="user-chip"
-              style={{ background: 'var(--lav-500)', borderColor: 'var(--lav-700)', cursor: 'pointer' }}
+              style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
               onClick={() => switchMode('owner')}
             >
               <StoreIcon size={14} />
@@ -201,13 +201,23 @@ export default function CustomerNav() {
               onClick={() => openModal('login')}
             >
               <StoreIcon size={13} />
-              SHOP OWNER LOGIN
+              SHOP OWNER
             </button>
           )}
 
+          {/* Rider Button */}
+          <button
+            className="user-chip"
+            style={{ background: 'var(--black)', cursor: 'pointer', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={() => openModal('rider')}
+          >
+            <TruckIcon size={13} />
+            RIDER
+          </button>
+
           <div
             className="user-chip"
-            style={{ cursor: 'pointer', background: loggedIn ? 'var(--lav-700)' : undefined }}
+            style={{ cursor: 'pointer', background: 'var(--black)', border: 'var(--brd)', display: 'flex', alignItems: 'center', gap: 6 }}
             onClick={() => (!loggedIn ? openModal('login') : undefined)}
           >
             <UserIcon size={14} />

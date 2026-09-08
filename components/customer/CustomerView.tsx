@@ -2,20 +2,27 @@
 
 import CustomerNav from './CustomerNav';
 import HeroSection from './HeroSection';
+import LocationBar from './LocationBar';
+import FeaturesSection from './FeaturesSection';
+import FashionSection from './FashionSection';
 import ResultsSection from './ResultsSection';
-import ProtocolSection from './ProtocolSection';
-import TelemetryFooter from './TelemetryFooter';
-import CustomerBottomNav from './CustomerBottomNav';
+import SeasonalBanner from './SeasonalBanner';
+import StoreMap from './StoreMap';
+import Footer from './Footer';
+import TeamSection from './TeamSection';
 
 export default function CustomerView() {
   return (
-    <div id="customerView" style={{ backgroundColor: '#f5f0e6', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div id="customerView" className="app-view">
       <CustomerNav />
       <HeroSection />
+      <LocationBar />
+      <SeasonalBanner />
+      <FeaturesSection />
+      <FashionSection />
+      <StoreMap />
       <ResultsSection />
-      <ProtocolSection />
-      <TelemetryFooter />
-      <CustomerBottomNav />
+      <TeamSection />
     </div>
   );
 }
