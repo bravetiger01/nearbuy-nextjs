@@ -11,7 +11,7 @@ export default function Footer() {
         {/* Logo and Tagline */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 16 }}>
           <Image
-            src="/logo.jpg"
+            src="/brand/nearbuy_logo.jpg"
             alt="nearbuy"
             width={48}
             height={48}

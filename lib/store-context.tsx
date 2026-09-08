@@ -264,6 +264,7 @@ interface AppContextValue {
   isOwner: boolean;
   ownerLogout: () => void;
   isRider: boolean;
+  loginRider: () => void;
   riderLogout: () => void;
   ownerShopId: string | null;
   inventoryLoading: boolean;
@@ -1270,9 +1271,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsOwner(true);
       setIsRider(false);
     } else if (m === 'rider') {
-      setIsRider(true);
       setIsOwner(false);
+      // Removed setIsRider(true) to require login screen
     }
+  }, []);
+
+  const loginRider = useCallback(() => {
+    setIsRider(true);
   }, []);
 
   const value = useMemo<AppContextValue>(
@@ -1312,6 +1317,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isOwner,
       ownerLogout,
       isRider,
+      loginRider,
       riderLogout,
       loginDemo,
       ownerShopId,
@@ -1396,6 +1402,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isOwner,
       ownerLogout,
       isRider,
+      loginRider,
       riderLogout,
       loginDemo,
       ownerShopId,

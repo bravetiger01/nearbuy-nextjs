@@ -246,3 +246,35 @@ export const LogoMark = ({ width = 142, height = 34 }: { width?: number; height?
     </text>
   </svg>
 );
+export const LockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </Icon>
+);
+
+export const FingerprintIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4" />
+    <path d="M5 19.5C5.5 18 6 15 6 11.5a6 6 0 0 1 12 0c0 3.1-.5 5.8-1 7.5" />
+    <path d="M9 19.5L9 11a3 3 0 0 1 6 0l0 8.5" />
+  </Icon>
+);
+
+export const BadgeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+    <line x1="12" x2="12" y1="8" y2="12" />
+    <line x1="12" x2="12.01" y1="16" y2="16" />
+  </Icon>
+);
+
+export const BarcodeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 5v14" />
+    <path d="M8 5v14" />
+    <path d="M12 5v14" />
+    <path d="M17 5v14" />
+    <path d="M21 5v14" />
+  </Icon>
+);

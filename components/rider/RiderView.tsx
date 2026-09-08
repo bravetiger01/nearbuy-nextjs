@@ -13,6 +13,7 @@ const ActiveDelivery = dynamic(() => import('./ActiveDelivery'), {
 });
 
 import RiderProfile from './RiderProfile';
+import RiderLogin from './RiderLogin';
 
 export default function RiderView() {
   const { isRider, riderJobs, riderLoading, loadRiderJobs } = useApp();
@@ -29,7 +30,7 @@ export default function RiderView() {
     setJobs(riderJobs.filter((j) => j.id !== activeJob?.id));
   }, [riderJobs, activeJob?.id]);
 
-  if (!isRider) return null;
+  if (!isRider) return <RiderLogin />;
 
   const handleAcceptJob = (jobId: string) => {
     const job = jobs.find((j) => j.id === jobId);

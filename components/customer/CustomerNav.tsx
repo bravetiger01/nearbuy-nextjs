@@ -42,7 +42,7 @@ export default function CustomerNav() {
       <div className={`nav-drawer ${drawerOpen ? 'open' : ''}`}>
         <div className="nav-drawer-header">
           <div className="nav-drawer-logo">
-            <Image src="/logo.jpg" alt="nearbuy" width={40} height={40} className="drawer-logo-img" style={{ mixBlendMode: 'multiply' }} />
+            <Image src="/brand/nearbuy_logo.jpg" alt="nearbuy" width={40} height={40} className="drawer-logo-img" style={{ mixBlendMode: 'multiply' }} />
           </div>
           <button className="nav-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close menu">✕</button>
         </div>
@@ -50,7 +50,7 @@ export default function CustomerNav() {
           <a href="#featSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
             <span className="ndl-icon">✦</span> Features
           </a>
-          <a href="#riderSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
+          <a href="#" className="nav-drawer-link" onClick={(e) => { e.preventDefault(); switchMode('rider'); setDrawerOpen(false); }}>
             <span className="ndl-icon">▶</span> Book Rider
           </a>
           <a href="#resultsSection" className="nav-drawer-link" onClick={() => setDrawerOpen(false)}>
@@ -97,7 +97,7 @@ export default function CustomerNav() {
           <a href="#" className="nb-logo-wrap">
             <div className="nb-logo-shine-wrap">
               <Image
-                src="/logo.jpg"
+                src="/brand/nearbuy_logo.jpg"
                 alt="nearbuy — find anything nearby"
                 width={40}
                 height={40}
@@ -111,7 +111,7 @@ export default function CustomerNav() {
 
           <div className="c-nav-links">
             <a href="#featSection" className="nav-link">Features</a>
-            <a href="#riderSection" className="nav-link">Book Rider</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); switchMode('rider'); }} className="nav-link">Book Rider</a>
             <a href="#resultsSection" className="nav-link">Search</a>
             <a href="/about" className="nav-link">About</a>
           </div>
