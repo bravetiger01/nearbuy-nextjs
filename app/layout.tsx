@@ -13,9 +13,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'nearbuy — Find anything nearby',
+  title: 'NEARBUY — Find any product at nearby offline stores',
   description:
-    'Product discovery for offline stores with live inventory, reservations, rider delivery and a shop-owner dashboard.',
+    'NEARBUY: Real-time product discovery for offline stores with live inventory, reservations, rider delivery and a shop-owner dashboard. Find anything near you instantly.',
 };
 
 export const viewport: Viewport = {
@@ -24,7 +24,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#F5F3FF',
+  themeColor: '#FFFFFF',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

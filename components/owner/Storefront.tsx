@@ -14,7 +14,7 @@ export default function Storefront() {
       <div className="o-header-row">
         <div>
           <h2 className="o-title" style={{ marginBottom: 4 }}>Storefront Preview</h2>
-          <p className="o-desc" style={{ marginBottom: 0 }}>This is how your store appears to customers on the Nearbuy app.</p>
+          <p className="o-desc" style={{ marginBottom: 0 }}>This is how your store appears to customers on the NEARBUY app.</p>
         </div>
       </div>
 

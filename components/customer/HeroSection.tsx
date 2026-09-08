@@ -21,14 +21,14 @@ export default function HeroSection() {
         <div className="hero-text-col">
           <div className="hero-label">
             <span className="hero-label-dot" />
-            PRODUCT DISCOVERY · OFFLINE STORES · LIVE INVENTORY
+            NEARBUY · OFFLINE STORES · LIVE INVENTORY
           </div>
           <h1 className="hero-title">
             FIND ANY
             <br />
             PRODUCT
             <br />
-            <span className="title-accent">NEARBY</span>
+            <span className="title-accent">NEARBUY</span>
           </h1>
           <p className="hero-sub">
             Real-time stock from local shops around you. Reserve it. Book a rider. Or shop fashion live with your personal

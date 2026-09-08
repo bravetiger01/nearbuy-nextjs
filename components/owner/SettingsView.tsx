@@ -50,7 +50,7 @@ export default function SettingsView() {
           <input type="text" className="f-inp" defaultValue="Near SVIT Gate, Vasad, Anand District, Gujarat — 388306" />
         </div>
         <div className="toggle-list">
-          {['Show on nearbuy platform', 'Accept reservations', 'Allow rider orders', 'Allow Style Guide orders'].map((t) => (
+          {['Show on NEARBUY platform', 'Accept reservations', 'Allow rider orders', 'Allow Style Guide orders'].map((t) => (
             <div className="toggle-row-boxy" key={t}>
               <span>{t}</span>
               <label className="tgl">

@@ -7,6 +7,7 @@ import FeaturesSection from './FeaturesSection';
 import FashionSection from './FashionSection';
 import TeamSection from './TeamSection';
 import ResultsSection from './ResultsSection';
+import Footer from './Footer';
 
 export default function CustomerView() {
   return (
@@ -18,6 +19,7 @@ export default function CustomerView() {
       <FashionSection />
       <ResultsSection />
       <TeamSection />
+      <Footer />
     </div>
   );
 }
